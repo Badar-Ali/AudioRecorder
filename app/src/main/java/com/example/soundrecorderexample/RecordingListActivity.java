@@ -73,11 +73,11 @@ public class RecordingListActivity extends AppCompatActivity {
 
     private void initViews() {
 
-        /** setting up the toolbar  **/
+        /** setting up the toolbar
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitle("Recording List");
         toolbar.setTitleTextColor(getResources().getColor(android.R.color.black));
-        setSupportActionBar(toolbar);
+        setSupportActionBar(toolbar);**/
 
         /** enabling back button ***/
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);

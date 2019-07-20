@@ -38,6 +38,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private MediaRecorder mRecorder;
     private MediaPlayer mPlayer;
     private String fileName = null;
+    private String fName = null;
     private int lastProgress = 0;
     private Handler mHandler = new Handler();
     private int RECORD_AUDIO_REQUEST_CODE =123 ;
@@ -58,11 +59,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void initViews() {
 
-        /** setting up the toolbar  **/
+        /** setting up the toolbar
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitle("Voice Recorder");
         toolbar.setTitleTextColor(getResources().getColor(android.R.color.black));
-        setSupportActionBar(toolbar);
+        setSupportActionBar(toolbar);**/
 
         linearLayoutRecorder = (LinearLayout) findViewById(R.id.linearLayoutRecorder);
         chronometer = (Chronometer) findViewById(R.id.chronometerTimer);
@@ -138,6 +139,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         TransitionManager.beginDelayedTransition(linearLayoutRecorder);
         imageViewRecord.setVisibility(View.VISIBLE);
         imageViewStop.setVisibility(View.GONE);
+        imageViewCancel.setVisibility(View.GONE);
         linearLayoutPlay.setVisibility(View.VISIBLE);
     }
 
@@ -145,6 +147,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         TransitionManager.beginDelayedTransition(linearLayoutRecorder);
         imageViewRecord.setVisibility(View.VISIBLE);
         imageViewStop.setVisibility(View.GONE);
+        imageViewCancel.setVisibility(View.GONE);
         linearLayoutPlay.setVisibility(View.GONE);
     }
 
@@ -154,6 +157,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         TransitionManager.beginDelayedTransition(linearLayoutRecorder);
         imageViewRecord.setVisibility(View.GONE);
         imageViewStop.setVisibility(View.VISIBLE);
+        imageViewCancel.setVisibility(View.VISIBLE);
         linearLayoutPlay.setVisibility(View.GONE);
     }
 
@@ -179,8 +183,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (!file.exists()) {
             file.mkdirs();
         }
-
-        fileName =  root.getAbsolutePath() + "/VoiceRecorderSimplifiedCoding/Audios/" + String.valueOf(System.currentTimeMillis() + ".mp3");
+        fName = String.valueOf(System.currentTimeMillis() + ".mp3");
+        fileName =  root.getAbsolutePath() + "/VoiceRecorderSimplifiedCoding/Audios/" + fName;
         Log.d("filename",fileName);
         mRecorder.setOutputFile(fileName);
         mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
@@ -198,6 +202,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         //starting the chronometer
         chronometer.setBase(SystemClock.elapsedRealtime());
         chronometer.start();
+
     }
 
 
@@ -220,12 +225,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         try{
             mRecorder.reset();
+
         }catch (Exception e){
             e.printStackTrace();
         }
+
+        DeleteRecording(fName);
         lastProgress = 0;
         seekBar.setProgress(0);
         chronometer.stop();
+        chronometer.setBase(SystemClock.elapsedRealtime());
+
 
     }
 
@@ -344,6 +354,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
+
+    private void DeleteRecording(String fName) {
+
+
+        File root = android.os.Environment.getExternalStorageDirectory();
+        String path = root.getAbsolutePath() + "/VoiceRecorderSimplifiedCoding/Audios";
+        Log.d("Files", "Path: " + path);
+        File directory = new File(path);
+        File[] files = directory.listFiles();
+        Log.d("Files", "Size: "+ files.length);
+        if( files!=null ){
+
+            for (int i = 0; i < files.length; i++) {
+
+                Log.d("Files", "FileName:" + files[i].getName());
+                String fileName = files[i].getName();
+                String recordingUri = root.getAbsolutePath() + "/VoiceRecorderSimplifiedCoding/Audios/" + fileName;
+
+                if(fileName.equals(fName))
+                {
+                    files[i].delete();
+                }
+            }
+
+        }
+
+    }
 
 
 }
