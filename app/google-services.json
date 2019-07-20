@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "540771056429",
+    "firebase_url": "https://speechtranslate-40b4d.firebaseio.com",
+    "project_id": "speechtranslate-40b4d",
+    "storage_bucket": "speechtranslate-40b4d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:540771056429:android:3f43bd8dfc33fb72",
+        "android_client_info": {
+          "package_name": "com.example.soundrecorderexample"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "540771056429-adlujn1l3por3n6j942ue1anmndjpk4g.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.soundrecorderexample",
+            "certificate_hash": "9aa4094fdf433ce8580cda6a763f07c5a1aea048"
+          }
+        },
+        {
+          "client_id": "540771056429-0aamltrbd9rdnts4drfr7q8pvbhpupc3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAYM3R-glObvCnkHLbCStrbYx9uKdrQBJU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "540771056429-0aamltrbd9rdnts4drfr7q8pvbhpupc3.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
