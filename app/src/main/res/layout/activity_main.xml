@@ -4,28 +4,54 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@android:color/white">
-
-
-    <android.support.v7.widget.Toolbar
-        android:id="@+id/toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        />
-
+<ScrollView
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
     <LinearLayout
         android:id="@+id/linearLayoutRecorder"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
+        android:layout_margin="10dp"
         android:layout_below="@+id/toolbar"
-        android:layout_marginTop="20dp"
         >
+        <Spinner
+            android:id="@+id/sourceSpinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="3dp"
+            android:textAlignment="center"
+            android:spinnerMode="dropdown">
 
+        </Spinner>
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:background="@android:color/darker_gray"
+            android:layout_marginTop="2dp"
+            />
+
+        <Spinner
+            android:id="@+id/destSpinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="3dp"
+            android:textAlignment="center"
+            android:spinnerMode="dropdown">
+
+        </Spinner>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0.5dp"
+                android:background="@android:color/darker_gray"
+                android:layout_marginTop="2dp"
+                />
         <Chronometer
             android:id="@+id/chronometerTimer"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="60sp"
+            android:textSize="35sp"
+            android:layout_margin="5dp"
             android:textColor="@android:color/darker_gray"
             android:layout_gravity="center_horizontal"
             />
@@ -111,12 +137,37 @@
                 />
 
         </LinearLayout>
+        <Button
+            android:id="@+id/translateBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="Translate"
+            android:layout_margin="3dp"
+            android:background="#ffffff"/>
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:hint="Source Text"
+            android:textAlignment="center"
+            android:background="#ffffda"
+            android:layout_margin="10dp"/>
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:hint="Destination Text"
+            android:background="#ffffda"
+            android:textAlignment="center"
+            android:layout_margin="10dp"/>
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="5dp"
+            android:layout_margin="5dp"/>
     </LinearLayout>
 
-
-
+    </ScrollView>
 
 </RelativeLayout>

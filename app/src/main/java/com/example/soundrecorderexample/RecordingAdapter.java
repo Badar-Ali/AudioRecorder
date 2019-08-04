@@ -2,7 +2,9 @@ package com.example.soundrecorderexample;
 
 import android.content.Context;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.transition.TransitionManager;
 import android.util.Log;
@@ -15,6 +17,12 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -26,10 +34,12 @@ public class RecordingAdapter  extends RecyclerView.Adapter<RecordingAdapter.Vie
     private MediaPlayer mPlayer;
     private boolean isPlaying = false;
     private int last_index = -1;
+    private StorageReference mStorageRef;
 
     public RecordingAdapter(Context context, ArrayList<Recording> recordingArrayList){
         this.context = context;
         this.recordingArrayList = recordingArrayList;
+        mStorageRef = FirebaseStorage.getInstance().getReference();
     }
 
     @Override
@@ -77,6 +87,7 @@ public class RecordingAdapter  extends RecyclerView.Adapter<RecordingAdapter.Vie
         SeekBar seekBar;
         TextView textViewName;
         Button deleteRecording;
+        Button uploadRecording;
         private String recordingUri;
         private int lastProgress = 0;
         private Handler mHandler = new Handler();
@@ -89,6 +100,43 @@ public class RecordingAdapter  extends RecyclerView.Adapter<RecordingAdapter.Vie
             seekBar = itemView.findViewById(R.id.seekBar);
             textViewName = itemView.findViewById(R.id.textViewRecordingname);
             deleteRecording = itemView.findViewById(R.id.deleteRecording);
+/*
+            uploadRecording = itemView.findViewById(R.id.uploadRecording);
+
+            uploadRecording.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    //Toast.makeText(context, "Audio Button Clicked",Toast.LENGTH_LONG).show();
+                    Recording upRecording = recordingArrayList.get(getAdapterPosition());
+                    String fName = "Audios/" + upRecording.getFileName();
+
+                    String path = upRecording.getUri();
+                    Uri file = Uri.fromFile(new File(path));
+
+
+                    StorageReference audioRef = mStorageRef.child(fName);
+
+                    audioRef.putFile(file)
+                            .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                                @Override
+                                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                    // Get a URL to the uploaded content
+                                    Toast.makeText(context, "File Uploaded",Toast.LENGTH_SHORT).show();
+                                }
+                            })
+                            .addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception exception) {
+                                    // Handle unsuccessful uploads
+                                    // ...
+                                    Toast.makeText(context, "File Unable to Upload!!!!!",Toast.LENGTH_LONG).show();
+
+                                }
+                            });
+                }
+            });*/
+
 
             deleteRecording.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -96,6 +144,25 @@ public class RecordingAdapter  extends RecyclerView.Adapter<RecordingAdapter.Vie
                     Recording delRecording = recordingArrayList.get(getAdapterPosition());
                     String fName = delRecording.getFileName();
                     DeleteRecording(fName);
+
+                    String fileName = "Audios/" + delRecording.getFileName();
+
+                    StorageReference audioDelRef = mStorageRef.child(fileName);
+
+                    audioDelRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            Toast.makeText(context, "File Deleted From Firebase Storage and Phone Storage",Toast.LENGTH_LONG).show();
+                        }
+                    }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception exception) {
+                            // Uh-oh, an error occurred!
+                            Toast.makeText(context, "File Deleted from Phone Storage ",Toast.LENGTH_LONG).show();
+
+                        }
+                    });
+
 
                     recordingArrayList.remove(getAdapterPosition());
 

@@ -1,9 +1,11 @@
 package com.example.soundrecorderexample;
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.SystemClock;
@@ -19,21 +21,32 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.Chronometer;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
+import android.widget.Spinner;
 import android.widget.Toast;
+
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
 import java.io.IOException;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, AdapterView.OnItemSelectedListener {
 
     private Toolbar toolbar;
     private Chronometer chronometer;
     private ImageView imageViewRecord, imageViewPlay, imageViewStop, imageViewCancel;
     private SeekBar seekBar;
+    private Spinner sourceSpinner, destSpinner;
     private LinearLayout linearLayoutRecorder, linearLayoutPlay;
     private MediaRecorder mRecorder;
     private MediaPlayer mPlayer;
@@ -43,6 +56,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Handler mHandler = new Handler();
     private int RECORD_AUDIO_REQUEST_CODE =123 ;
     private boolean isPlaying = false;
+    private Button trasnlateBtn;
+    private Context context;
+    private StorageReference mStorageRef;
+    private int counter = 0;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,7 +70,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             getPermissionToRecordAudio();
         }
-
+        context = this;
+        mStorageRef = FirebaseStorage.getInstance().getReference();
         initViews();
 
     }
@@ -74,12 +93,69 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         imageViewCancel = (ImageView) findViewById(R.id.imageViewCancel);
         linearLayoutPlay = (LinearLayout) findViewById(R.id.linearLayoutPlay);
         seekBar = (SeekBar) findViewById(R.id.seekBar);
+        sourceSpinner = findViewById(R.id.sourceSpinner);
+        destSpinner = findViewById(R.id.destSpinner);
+        trasnlateBtn = findViewById(R.id.translateBtn);
+
+
+        String[] srclanguages = new String[]{"Select Source Language","English", "German", "French" , "Arabic", "Spanish"};
+        String[] destlanguages = new String[]{"Select Destination Language","English", "German", "French" , "Arabic", "Spanish"};
+        ArrayAdapter <String> srcAdapter = new ArrayAdapter<>(this,R.layout.support_simple_spinner_dropdown_item,srclanguages);
+        ArrayAdapter <String> destAdapter = new ArrayAdapter<>(this,R.layout.support_simple_spinner_dropdown_item,destlanguages);
+        sourceSpinner.setAdapter(srcAdapter);
+        destSpinner.setAdapter(destAdapter);
 
         imageViewRecord.setOnClickListener(this);
         imageViewStop.setOnClickListener(this);
         imageViewPlay.setOnClickListener(this);
         imageViewCancel.setOnClickListener(this);
 
+        trasnlateBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(context, "Translate Button Clicked",Toast.LENGTH_LONG).show();
+
+                if(fileName != null && counter == 1)
+                {
+                    String uploadfileName = "Audios/" + fName;
+
+                    Uri file = Uri.fromFile(new File(fileName));
+
+                    StorageReference audioRef = mStorageRef.child(uploadfileName);
+
+                    audioRef.putFile(file)
+                            .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                                @Override
+                                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                    // Get a URL to the uploaded content
+                                    Toast.makeText(context, "File Uploaded",Toast.LENGTH_SHORT).show();
+
+                                    String downloadLink = taskSnapshot.getStorage().getDownloadUrl().toString();
+                                    Toast.makeText(context, "File Link: " + downloadLink,Toast.LENGTH_SHORT).show();
+
+                                    counter = 0;
+                                }
+                            })
+                            .addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception exception) {
+                                    // Handle unsuccessful uploads
+                                    // ...
+                                    Toast.makeText(context, "File Unable to Upload!!!!!",Toast.LENGTH_LONG).show();
+
+                                }
+                            });
+                }
+                else {
+
+                    Toast.makeText(context, " Please Record Audio Before Translating",Toast.LENGTH_LONG).show();
+
+                }
+            }
+        });
+
+        sourceSpinner.setOnItemSelectedListener(this);
+        destSpinner.setOnItemSelectedListener(this);
 
     }
 
@@ -141,6 +217,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         imageViewStop.setVisibility(View.GONE);
         imageViewCancel.setVisibility(View.GONE);
         linearLayoutPlay.setVisibility(View.VISIBLE);
+        counter = 1;
     }
 
     private void prepareforCancel() {
@@ -149,6 +226,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         imageViewStop.setVisibility(View.GONE);
         imageViewCancel.setVisibility(View.GONE);
         linearLayoutPlay.setVisibility(View.GONE);
+        counter = 0;
     }
 
 
@@ -159,6 +237,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         imageViewStop.setVisibility(View.VISIBLE);
         imageViewCancel.setVisibility(View.VISIBLE);
         linearLayoutPlay.setVisibility(View.GONE);
+        counter = 0;
     }
 
     private void stopPlaying() {
@@ -195,6 +274,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         } catch (IOException e) {
             e.printStackTrace();
         }
+
         lastProgress = 0;
         seekBar.setProgress(0);
         stopPlaying();
@@ -383,4 +463,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
+    @Override
+    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+        if(position > 0)
+        {
+            Toast.makeText(this, "Selected Language: " + sourceSpinner.getItemAtPosition(position), Toast.LENGTH_LONG).show();
+
+        }
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> parent) {
+
+    }
 }
