@@ -109,7 +109,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         String[] srclanguages = new String[]{"Select Source Language","English", "German", "French" , "Arabic", "Spanish"};
         String[] destlanguages = new String[]{"Select Destination Language","English", "German", "French" , "Arabic", "Spanish"};
         ArrayAdapter <String> srcAdapter = new ArrayAdapter<>(this,R.layout.support_simple_spinner_dropdown_item,srclanguages);
-        ArrayAdapter <String> destAdapter = new ArrayAdapter<>(this,R.layout.support_simple_spinner_dropdown_item,destlanguages);
+        final ArrayAdapter <String> destAdapter = new ArrayAdapter<>(this,R.layout.support_simple_spinner_dropdown_item,destlanguages);
         sourceSpinner.setAdapter(srcAdapter);
         destSpinner.setAdapter(destAdapter);
 
@@ -123,11 +123,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void onClick(View v) {
                 Toast.makeText(context, "Translate Button Clicked",Toast.LENGTH_LONG).show();
 
-                if (fileName != null && counter == 1 && databaseCounter == 1)
-                {
+                int srcPos = sourceSpinner.getSelectedItemPosition();
+                int destPos = destSpinner.getSelectedItemPosition();
 
-                }
-                if(fileName != null && counter == 1)
+                if(fileName != null && counter == 1 && srcPos > 0 && destPos > 0)
                 {
                     final String uploadfileName = "Audios/" + fName;
 
@@ -152,7 +151,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                         Toast.makeText(context, "File Link: " + downloadLink,Toast.LENGTH_SHORT).show();
 
 
-                                        DatabaseReference audiosRef = mDatabaseRef.child("Audio");
+                                        DatabaseReference audiosRef = mDatabaseRef.child("Translate");
 
                                         String srcLanguage = sourceSpinner.getSelectedItem().toString();
                                         String destLanguage = destSpinner.getSelectedItem().toString();
@@ -162,10 +161,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                         Toast.makeText(context, "Selected Source Language: " + srcLanguage, Toast.LENGTH_LONG).show();
                                         Toast.makeText(context, "Selected Destination Language: " + destLanguage, Toast.LENGTH_LONG).show();
 
-                                        audiosRef.child("srcLang").setValue(srcLanguage);
-                                        audiosRef.child("destLang").setValue(destLanguage);
-                                        audiosRef.child("fileLink").setValue(downloadLink);
-                                        audiosRef.child("Pressed").setValue(counter);
+                                        audiosRef.child("from").setValue(srcLanguage);
+                                        audiosRef.child("to").setValue(destLanguage);
+                                        audiosRef.child("uri").setValue(downloadLink);
+                                        audiosRef.child("pressed").setValue(counter);
 
 
                                     }
@@ -186,7 +185,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 else {
 
-                    Toast.makeText(context, " Please Record Audio Before Translating",Toast.LENGTH_LONG).show();
+                    Toast.makeText(context, " Please Record Audio Before Translating and Select Desired Source and Destination Language",Toast.LENGTH_LONG).show();
 
                 }
             }
