@@ -31,8 +31,12 @@ import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -60,6 +64,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Context context;
     private StorageReference mStorageRef;
     private int counter = 0;
+    private int databaseCounter = 0;
+    String downloadLink;
+    DatabaseReference mDatabaseRef;
 
 
     @Override
@@ -72,6 +79,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         context = this;
         mStorageRef = FirebaseStorage.getInstance().getReference();
+        mDatabaseRef = FirebaseDatabase.getInstance().getReference();
         initViews();
 
     }
@@ -115,13 +123,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void onClick(View v) {
                 Toast.makeText(context, "Translate Button Clicked",Toast.LENGTH_LONG).show();
 
+                if (fileName != null && counter == 1 && databaseCounter == 1)
+                {
+
+                }
                 if(fileName != null && counter == 1)
                 {
-                    String uploadfileName = "Audios/" + fName;
+                    final String uploadfileName = "Audios/" + fName;
 
-                    Uri file = Uri.fromFile(new File(fileName));
+                    final Uri file = Uri.fromFile(new File(fileName));
 
-                    StorageReference audioRef = mStorageRef.child(uploadfileName);
+                    final StorageReference audioRef = mStorageRef.child(uploadfileName);
+
+
 
                     audioRef.putFile(file)
                             .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
@@ -130,9 +144,32 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                     // Get a URL to the uploaded content
                                     Toast.makeText(context, "File Uploaded",Toast.LENGTH_SHORT).show();
 
-                                    String downloadLink = taskSnapshot.getStorage().getDownloadUrl().toString();
-                                    Toast.makeText(context, "File Link: " + downloadLink,Toast.LENGTH_SHORT).show();
+                                    Task<Uri> urlTask = taskSnapshot.getStorage().getDownloadUrl();
+                                    while (!urlTask.isSuccessful());
+                                    {
+                                        Uri downloadUrl = urlTask.getResult();
+                                        downloadLink = String.valueOf(downloadUrl);
+                                        Toast.makeText(context, "File Link: " + downloadLink,Toast.LENGTH_SHORT).show();
 
+
+                                        DatabaseReference audiosRef = mDatabaseRef.child("Audio");
+
+                                        String srcLanguage = sourceSpinner.getSelectedItem().toString();
+                                        String destLanguage = destSpinner.getSelectedItem().toString();
+                                        String btnPressed = "" + counter;
+
+                                        Toast.makeText(context, "Real time Database" , Toast.LENGTH_LONG).show();
+                                        Toast.makeText(context, "Selected Source Language: " + srcLanguage, Toast.LENGTH_LONG).show();
+                                        Toast.makeText(context, "Selected Destination Language: " + destLanguage, Toast.LENGTH_LONG).show();
+
+                                        audiosRef.child("srcLang").setValue(srcLanguage);
+                                        audiosRef.child("destLang").setValue(destLanguage);
+                                        audiosRef.child("fileLink").setValue(downloadLink);
+                                        audiosRef.child("Pressed").setValue(counter);
+
+
+                                    }
+                                    //databaseCounter = 1;
                                     counter = 0;
                                 }
                             })
@@ -145,6 +182,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                                 }
                             });
+
                 }
                 else {
 
@@ -158,6 +196,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         destSpinner.setOnItemSelectedListener(this);
 
     }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
