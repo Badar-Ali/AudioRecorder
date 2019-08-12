@@ -49,16 +49,7 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
-<!--            <Button
-                android:id="@+id/uploadRecording"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Upload"
-                android:padding="10dp"
-                android:background="#fff"
 
-                />
--->
             <Button
                 android:id="@+id/deleteRecording"
                 android:layout_width="wrap_content"
@@ -66,6 +57,17 @@
                 android:text="Delete"
                 android:background="#fff"
                 />
+
+            <Button
+                android:id="@+id/translateRecording"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Translate"
+                android:padding="10dp"
+                android:background="#fff"
+
+                />
+
         </LinearLayout>
         <View
             android:layout_width="match_parent"

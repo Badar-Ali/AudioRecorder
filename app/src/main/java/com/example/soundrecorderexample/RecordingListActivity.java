@@ -1,6 +1,7 @@
 package com.example.soundrecorderexample;
 
 
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -10,6 +11,12 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
+
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -32,6 +39,7 @@ public class RecordingListActivity extends AppCompatActivity {
         initViews();
 
         fetchRecordings();
+        //fetchRecordingsFromFirebaseStorage();
 
     }
 
@@ -51,19 +59,53 @@ public class RecordingListActivity extends AppCompatActivity {
                 String fileName = files[i].getName();
                 String recordingUri = root.getAbsolutePath() + "/VoiceRecorderSimplifiedCoding/Audios/" + fileName;
 
-                Recording recording = new Recording(recordingUri,fileName,false);
+                Recording recording = new Recording(recordingUri,fileName,false,false);
                 recordingArraylist.add(recording);
             }
+
 
             textViewNoRecordings.setVisibility(View.GONE);
             recyclerViewRecordings.setVisibility(View.VISIBLE);
             setAdaptertoRecyclerView();
 
-        }else{
+        }
+
+        int noOfRecordings = recordingArraylist.size();
+        if (noOfRecordings == 0)
+        {
             textViewNoRecordings.setVisibility(View.VISIBLE);
             recyclerViewRecordings.setVisibility(View.GONE);
         }
 
+    }
+
+    private void fetchRecordingsFromFirebaseStorage() {
+
+        DatabaseReference reports = FirebaseDatabase.getInstance().getReference().child("Audio");
+        reports.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for (DataSnapshot data : dataSnapshot.getChildren()){
+
+                    String fileName = data.getValue(String.class);
+
+                    File root = android.os.Environment.getExternalStorageDirectory();
+                    String recordingUri = root.getAbsolutePath() + "/VoiceRecorderSimplifiedCoding/Audios/" + fileName;
+
+
+                    Recording recording = new Recording(recordingUri,fileName,false,false);
+                    recordingArraylist.add(recording);
+
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+        setAdaptertoRecyclerView();
     }
 
     private void setAdaptertoRecyclerView() {
@@ -74,10 +116,10 @@ public class RecordingListActivity extends AppCompatActivity {
     private void initViews() {
 
         /** setting up the toolbar
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setTitle("Recording List");
-        toolbar.setTitleTextColor(getResources().getColor(android.R.color.black));
-        setSupportActionBar(toolbar);**/
+         toolbar = (Toolbar) findViewById(R.id.toolbar);
+         toolbar.setTitle("Recording List");
+         toolbar.setTitleTextColor(getResources().getColor(android.R.color.black));
+         setSupportActionBar(toolbar);**/
 
         /** enabling back button ***/
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);

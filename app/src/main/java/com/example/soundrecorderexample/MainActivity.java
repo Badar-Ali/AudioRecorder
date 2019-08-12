@@ -133,8 +133,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     final Uri file = Uri.fromFile(new File(fileName));
 
                     final StorageReference audioRef = mStorageRef.child(uploadfileName);
-
-
+                    
 
                     audioRef.putFile(file)
                             .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
@@ -166,7 +165,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                         audiosRef.child("uri").setValue(downloadLink);
                                         audiosRef.child("pressed").setValue(counter);
 
-
+                                        //writeFileToDatabase(fName);
                                     }
                                     //databaseCounter = 1;
                                     counter = 0;
@@ -193,6 +192,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         sourceSpinner.setOnItemSelectedListener(this);
         destSpinner.setOnItemSelectedListener(this);
+
+    }
+
+    private void writeFileToDatabase(String filName) {
+
+        DatabaseReference audiosRef = mDatabaseRef.child("Audio").child(fName);
+        audiosRef.push();
+        audiosRef.setValue(filName);
+
 
     }
 
