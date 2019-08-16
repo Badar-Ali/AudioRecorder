@@ -2,8 +2,11 @@ package com.example.soundrecorderexample;
 
 import android.content.Context;
 import android.content.Intent;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.media.MediaRecorder;
 import android.net.Uri;
+import android.os.Environment;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
@@ -42,6 +45,7 @@ public class RecordingAdapter  extends RecyclerView.Adapter<RecordingAdapter.Vie
     private int last_index = -1;
     private StorageReference mStorageRef;
     DatabaseReference mDatabaseRef;
+    int filePresent;
 
     public RecordingAdapter(Context context, ArrayList<Recording> recordingArrayList){
         this.context = context;
@@ -116,12 +120,22 @@ public class RecordingAdapter  extends RecyclerView.Adapter<RecordingAdapter.Vie
                 @Override
                 public void onClick(View v) {
 
-                    //Toast.makeText(context, "Audio Button Clicked",Toast.LENGTH_LONG).show();
+                    /*Toast.makeText(context, "Audio Button Clicked",Toast.LENGTH_LONG).show();
+                    Recording transRecording = recordingArrayList.get(getAdapterPosition());
+                    try {
+                        int i = getFile(recordingArrayList.get(getAdapterPosition()));
+                    } catch (IOException e) {
+                        Toast.makeText(context,"Exception: " + e,Toast.LENGTH_LONG ).show();
+                    }
+                    */
                     Recording transRecording = recordingArrayList.get(getAdapterPosition());
                     String fileName = transRecording.getUri();
+                    String fName = transRecording.getFileName();
+
 
                     Intent i = new Intent(context, TranslateActivity.class);
                     i.putExtra("fileName", fileName);
+                    i.putExtra("fName",fName);
                     context.startActivity(i);
 
                 }
@@ -136,7 +150,7 @@ public class RecordingAdapter  extends RecyclerView.Adapter<RecordingAdapter.Vie
 
                     DeleteRecording(fName);
 
-                    //deleteRecordingFromDatabase(fName);
+                    deleteRecordingFromDatabase(fName);
 
                     String fileName = "Audios/" + delRecording.getFileName();
 
@@ -171,45 +185,87 @@ public class RecordingAdapter  extends RecyclerView.Adapter<RecordingAdapter.Vie
                     int position = getAdapterPosition();
                     Recording recording = recordingArrayList.get(position);
 
-                    recordingUri = recording.getUri();
-                    //getFile(recordingArrayList.get(position));
+                    //recordingUri = recording.getUri();
+                    try {
+                        filePresent = getFile(recordingArrayList.get(getAdapterPosition()));
+                    } catch (IOException e) {
+                        Toast.makeText(context,"Exception: " + e.toString(),Toast.LENGTH_LONG ).show();
+                    }
                     //file download ki location manage karni hy
 
-                    if( isPlaying ){
-                        stopPlaying();
-                        if( position == last_index ){
-                            recording.setPlaying(false);
+                    if (filePresent == 1) {
+                        recordingUri = recording.getUri();
+                        //HandlePlayer();
+                        if (isPlaying) {
                             stopPlaying();
+                            if (position == last_index) {
+                                recording.setPlaying(false);
+                                stopPlaying();
+                                notifyItemChanged(position);
+                            } else {
+                                markAllPaused();
+                                recording.setPlaying(true);
+                                notifyItemChanged(position);
+                                startPlaying(recording, position);
+                                last_index = position;
+                            }
+
+                        } else {
+                            if (recording.isPlaying()) {
+                                recording.setPlaying(false);
+                                stopPlaying();
+                                Log.d("isPlayin", "True");
+                            } else {
+                                startPlaying(recording, position);
+                                recording.setPlaying(true);
+                                seekBar.setMax(mPlayer.getDuration());
+                                Log.d("isPlayin", "False");
+                            }
                             notifyItemChanged(position);
-                        }else{
-                            markAllPaused();
-                            recording.setPlaying(true);
-                            notifyItemChanged(position);
-                            startPlaying(recording,position);
                             last_index = position;
                         }
-
-                    }else {
-                        if( recording.isPlaying() ){
-                            recording.setPlaying(false);
-                            stopPlaying();
-                            Log.d("isPlayin","True");
-                        }else {
-                            startPlaying(recording,position);
-                            recording.setPlaying(true);
-                            seekBar.setMax(mPlayer.getDuration());
-                            Log.d("isPlayin","False");
-                        }
-                        notifyItemChanged(position);
-                        last_index = position;
                     }
-
                 }
 
             });
         }
 
-        private void getFile(final Recording recording) throws IOException {
+        public void HandlePlayer()
+        {
+            int position = getAdapterPosition();
+            Recording recording = recordingArrayList.get(position);
+
+            if (isPlaying) {
+                stopPlaying();
+                if (position == last_index) {
+                    recording.setPlaying(false);
+                    stopPlaying();
+                    notifyItemChanged(position);
+                } else {
+                    markAllPaused();
+                    recording.setPlaying(true);
+                    notifyItemChanged(position);
+                    startPlaying(recording, position);
+                    last_index = position;
+                }
+
+            } else {
+                if (recording.isPlaying()) {
+                    recording.setPlaying(false);
+                    stopPlaying();
+                    Log.d("isPlayin", "True");
+                } else {
+                    startPlaying(recording, position);
+                    recording.setPlaying(true);
+                    seekBar.setMax(mPlayer.getDuration());
+                    Log.d("isPlayin", "False");
+                }
+                notifyItemChanged(position);
+                last_index = position;
+            }
+        }
+
+        private int getFile(final Recording recording) throws IOException {
             String fName = recording.getFileName();
 
             int result = checkLocalStorageStatus(fName);
@@ -217,16 +273,98 @@ public class RecordingAdapter  extends RecyclerView.Adapter<RecordingAdapter.Vie
             if(result == 1)
             {
                 recording.setLocalStorageStatus(true);
+                Toast.makeText(context,"Recording Exists in phone",Toast.LENGTH_LONG).show();
             }
             else{
+
+                Toast.makeText(context,"Please wait! Recording will be played from Server",Toast.LENGTH_LONG).show();
+                StorageReference mStorageRef = FirebaseStorage.getInstance().getReference();
+
+                final String uploadfileName = "Audios/" + fName;
+
+                final StorageReference audioRef = mStorageRef.child(uploadfileName);
+                audioRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                    @Override
+                    public void onSuccess(Uri uri) {
+                      /*  MediaPlayer mediaPlayer = new MediaPlayer();
+                        mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+
+                        try {
+                            mediaPlayer.setDataSource(String.valueOf(uri));
+                        } catch (IOException e) {
+                            Toast.makeText(context,"Exception: " + e.toString(), Toast.LENGTH_LONG).show();
+                        }
+                        try {
+                            mediaPlayer.prepare();
+                        } catch (IOException e) {
+                            Toast.makeText(context,"Exception: " + e.toString(), Toast.LENGTH_LONG).show();
+                        }
+                        mediaPlayer.start();
+                        */
+                      recordingUri =uri.toString();
+                      //Toast.makeText(context,"Recording Uri: " + recordingUri,Toast.LENGTH_LONG).show();
+                      //Toast.makeText(context,"Firebase Uri: " + uri.toString(),Toast.LENGTH_LONG).show();
+
+                        HandlePlayer();
+                    }
+
+                });
+                //HandlePlayer();
+
+                /*try {
+                    MediaPlayer player = new MediaPlayer();
+                    player.setAudioStreamType(AudioManager.STREAM_MUSIC);
+                    player.setDataSource("https://firebasestorage.googleapis.com/v0/b/speechtranslate-40b4d.appspot.com/o/Audios%2F1565785685866.mp3?alt=media&token=f9ad820e-dff4-4726-a69a-51e4b1e70ad4");
+                    player.prepare();
+                    player.start();
+                } catch (Exception e) {
+                    Toast.makeText(context,"Exception: " + e.toString(), Toast.LENGTH_LONG).show();
+                }*/
+/*
                 StorageReference mStorageRef = FirebaseStorage.getInstance().getReference();
 
                 final String uploadfileName = "Audios/" + fName;
 
                 final StorageReference audioRef = mStorageRef.child(uploadfileName);
 
+                MediaRecorder mRecorder = new MediaRecorder();
+                mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+                mRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+                File root = android.os.Environment.getExternalStorageDirectory();
+                File localFile = new File(root.getAbsolutePath() + "/VoiceRecorderSimplifiedCoding/Audios");
+                if (!localFile.exists()) {
+                    localFile.mkdirs();
+                }
+                String fileName =  root.getAbsolutePath() + "/VoiceRecorderSimplifiedCoding/Audios/" + fName;
+                Log.d("filename",fileName);
+                mRecorder.setOutputFile(fileName);
+                mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
 
-                File localFile = File.createTempFile("images", "jpg");
+
+                File root = android.os.Environment.getExternalStorageDirectory();
+
+                String path =root.getAbsolutePath() + "/VoiceRecorderSimplifiedCoding/Audios/";
+                //File localFile = File.createTempFile("images", "jpg");
+                File audio = new File(path);
+                File localFile = File.createTempFile(fName,"",audio);
+                localFile.createNewFile();
+
+                final String uploadfileName = "Audios/" + fName;
+
+                FirebaseStorage storage = FirebaseStorage.getInstance();
+                StorageReference storageRef = storage.getReferenceFromUrl("https://firebasestorage.googleapis.com/v0/b/speechtranslate-40b4d.appspot.com/o/Audios%2F1565785685866.mp3?alt=media&token=f9ad820e-dff4-4726-a69a-51e4b1e70ad4");
+                StorageReference  audioRef = storageRef.child(uploadfileName);
+
+                File root = android.os.Environment.getExternalStorageDirectory();
+                String path =root.getAbsolutePath() + "/VoiceRecorderSimplifiedCoding/Audios/";
+
+                File rootPath = new File(path, fName);
+                    if(!rootPath.exists()) {
+                        rootPath.mkdirs();
+                    }
+
+                    final File localFile = new File(rootPath,fName);
+
 
                 audioRef.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
                     @Override
@@ -235,15 +373,17 @@ public class RecordingAdapter  extends RecyclerView.Adapter<RecordingAdapter.Vie
                         recording.setLocalStorageStatus(true);
                         Toast.makeText(context,"File Downloaded", Toast.LENGTH_LONG).show();
 
+
                     }
                 }).addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception exception) {
-                        // Handle any errors
+                        Toast.makeText(context,"Exception: " + exception.toString(), Toast.LENGTH_LONG).show();
                     }
                 });
-            }
+*/            }
 
+            return result;
         }
 
         public void manageSeekBar(ViewHolder holder){
@@ -306,11 +446,12 @@ public class RecordingAdapter  extends RecyclerView.Adapter<RecordingAdapter.Vie
         private void startPlaying(final Recording audio, final int position) {
             mPlayer = new MediaPlayer();
             try {
+                //3Toast.makeText(context,"Recording Uri: " + recordingUri,Toast.LENGTH_LONG).show();
                 mPlayer.setDataSource(recordingUri);
                 mPlayer.prepare();
                 mPlayer.start();
             } catch (IOException e) {
-                Log.e("LOG_TAG", "prepare() failed");
+                Toast.makeText(context,"Exception: " + e.toString(),Toast.LENGTH_LONG).show();
             }
             //showing the pause button
             seekBar.setMax(mPlayer.getDuration());
@@ -358,8 +499,9 @@ public class RecordingAdapter  extends RecyclerView.Adapter<RecordingAdapter.Vie
     }
 
     private void deleteRecordingFromDatabase(String fName) {
+        String audioName = fName.replace(".",",");
 
-        DatabaseReference audiosRef = mDatabaseRef.child("Audio").child(fName);
+        DatabaseReference audiosRef = mDatabaseRef.child("Audio").child(audioName);
         audiosRef.setValue(null);
     }
 

@@ -142,33 +142,35 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                     // Get a URL to the uploaded content
                                     Toast.makeText(context, "File Uploaded",Toast.LENGTH_SHORT).show();
 
-                                    Task<Uri> urlTask = taskSnapshot.getStorage().getDownloadUrl();
-                                    while (!urlTask.isSuccessful());
-                                    {
-                                        Uri downloadUrl = urlTask.getResult();
-                                        downloadLink = String.valueOf(downloadUrl);
-                                        Toast.makeText(context, "File Link: " + downloadLink,Toast.LENGTH_SHORT).show();
+                                    //Task<Uri> urlTask = taskSnapshot.getStorage().getDownloadUrl();
+                                    taskSnapshot.getStorage().getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                        @Override
+                                        public void onSuccess(Uri pUri) {
+                                            downloadLink = String.valueOf("gs://speechtranslate-40b4d.appspot.com/" + pUri.getLastPathSegment());
+                                            Toast.makeText(context, "File Link: " + downloadLink,Toast.LENGTH_SHORT).show();
 
+                                            DatabaseReference audiosRef = mDatabaseRef.child("Translate");
 
-                                        DatabaseReference audiosRef = mDatabaseRef.child("Translate");
+                                            String srcLanguage = sourceSpinner.getSelectedItem().toString();
+                                            String destLanguage = destSpinner.getSelectedItem().toString();
+                                            String btnPressed = "" + counter;
 
-                                        String srcLanguage = sourceSpinner.getSelectedItem().toString();
-                                        String destLanguage = destSpinner.getSelectedItem().toString();
-                                        String btnPressed = "" + counter;
+                                            Toast.makeText(context, "Real time Database" , Toast.LENGTH_LONG).show();
+                                            Toast.makeText(context, "Selected Source Language: " + srcLanguage, Toast.LENGTH_LONG).show();
+                                            Toast.makeText(context, "Selected Destination Language: " + destLanguage, Toast.LENGTH_LONG).show();
 
-                                        Toast.makeText(context, "Real time Database" , Toast.LENGTH_LONG).show();
-                                        Toast.makeText(context, "Selected Source Language: " + srcLanguage, Toast.LENGTH_LONG).show();
-                                        Toast.makeText(context, "Selected Destination Language: " + destLanguage, Toast.LENGTH_LONG).show();
+                                            audiosRef.child("from").setValue(srcLanguage);
+                                            audiosRef.child("to").setValue(destLanguage);
+                                            audiosRef.child("uri").setValue(downloadLink);
+                                            audiosRef.child("pressed").setValue(1);
+                                            audiosRef.child("fname").setValue(fName);
 
-                                        audiosRef.child("from").setValue(srcLanguage);
-                                        audiosRef.child("to").setValue(destLanguage);
-                                        audiosRef.child("uri").setValue(downloadLink);
-                                        audiosRef.child("pressed").setValue(counter);
-
-                                        //writeFileToDatabase(fName);
-                                    }
+                                            writeFileToDatabase(fName);
+                                            counter = 0;
+                                        }
+                                    });
                                     //databaseCounter = 1;
-                                    counter = 0;
+                                    //counter = 0;
                                 }
                             })
                             .addOnFailureListener(new OnFailureListener() {
@@ -197,10 +199,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void writeFileToDatabase(String filName) {
 
-        DatabaseReference audiosRef = mDatabaseRef.child("Audio").child(fName);
-        audiosRef.push();
-        audiosRef.setValue(filName);
 
+        if(fName != null && !fName.isEmpty() && filName != null && !filName.isEmpty())
+        {
+            try {
+                String audioFile = fName.replace(".",",");
+                DatabaseReference audiosRef = mDatabaseRef.child("Audio").child(audioFile);
+
+                audiosRef.setValue(filName);
+                Toast.makeText(context,"Written to Database",Toast.LENGTH_LONG).show();
+            }
+            catch (Exception e)
+            {
+                Toast.makeText(context,"Exception: " + e, Toast.LENGTH_LONG).show();
+            }
+        }
 
     }
 

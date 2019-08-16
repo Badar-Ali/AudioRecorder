@@ -1,6 +1,7 @@
 package com.example.soundrecorderexample;
 
 
+import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -11,6 +12,7 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -28,6 +30,7 @@ public class RecordingListActivity extends AppCompatActivity {
     private ArrayList<Recording> recordingArraylist;
     private RecordingAdapter recordingAdapter;
     private TextView textViewNoRecordings;
+    private Context context;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,11 +38,12 @@ public class RecordingListActivity extends AppCompatActivity {
         setContentView(R.layout.activity_recording_list);
 
         recordingArraylist = new ArrayList<Recording>();
+        context = this;
 
         initViews();
 
-        fetchRecordings();
-        //fetchRecordingsFromFirebaseStorage();
+        //fetchRecordings();
+        fetchRecordingsFromFirebaseStorage();
 
     }
 
@@ -80,6 +84,7 @@ public class RecordingListActivity extends AppCompatActivity {
     }
 
     private void fetchRecordingsFromFirebaseStorage() {
+        final int fileCounter = 1;
 
         DatabaseReference reports = FirebaseDatabase.getInstance().getReference().child("Audio");
         reports.addValueEventListener(new ValueEventListener() {
@@ -87,15 +92,27 @@ public class RecordingListActivity extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 for (DataSnapshot data : dataSnapshot.getChildren()){
 
-                    String fileName = data.getValue(String.class);
-
                     File root = android.os.Environment.getExternalStorageDirectory();
+                    String fileNameEncoded = data.getValue(String.class);
+                    String fileName = fileNameEncoded.replace(",",".");
                     String recordingUri = root.getAbsolutePath() + "/VoiceRecorderSimplifiedCoding/Audios/" + fileName;
+                    //Toast.makeText(context,"File Name " + fileCounter + " :"+ fileName,Toast.LENGTH_LONG).show();
 
 
                     Recording recording = new Recording(recordingUri,fileName,false,false);
                     recordingArraylist.add(recording);
 
+                }
+                int noOfRecordings = recordingArraylist.size();
+
+                if (noOfRecordings == 0)
+                {
+                    textViewNoRecordings.setVisibility(View.VISIBLE);
+                    recyclerViewRecordings.setVisibility(View.GONE);
+                }
+                else
+                {
+                    setAdaptertoRecyclerView();
                 }
             }
 
@@ -105,7 +122,8 @@ public class RecordingListActivity extends AppCompatActivity {
             }
         });
 
-        setAdaptertoRecyclerView();
+
+
     }
 
     private void setAdaptertoRecyclerView() {

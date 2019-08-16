@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".translatedList">
+
+    <TextView
+            android:id="@+id/empty"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_margin="5dp"
+            tools:ignore="MissingConstraints" />
+
+    <TextView
+        android:id="@+id/emptyVertical"
+        android:layout_width="1dp"
+        android:layout_height="match_parent"
+        android:layout_margin="5dp"
+        tools:ignore="MissingConstraints" />
+
+    <TextView
+            app:layout_constraintTop_toBottomOf="@+id/empty"
+            app:layout_constraintBottom_toTopOf="@+id/fromData"
+            app:layout_constraintLeft_toRightOf="@+id/emptyVertical"
+            app:layout_constraintRight_toLeftOf="@+id/toLang"
+            android:id="@+id/fromLang"
+
+            android:layout_width="130dp"
+            android:layout_height="wrap_content"
+            android:text="fromLanguage"
+            android:textColor="#000000"
+            android:textAlignment="center"
+            android:layout_margin="10dp"
+            android:padding="10dp"
+            tools:ignore="MissingConstraints" />
+
+    <TextView
+            app:layout_constraintTop_toBottomOf="@+id/empty"
+            app:layout_constraintLeft_toRightOf="@+id/fromLang"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/toData"
+            android:id="@+id/toLang"
+            android:layout_width="130dp"
+            android:layout_height="wrap_content"
+            android:text="toLanguage"
+            android:textColor="#000000"
+            android:textAlignment="center"
+            android:layout_margin="10dp"
+            android:padding="10dp"
+            tools:ignore="MissingConstraints" />
+
+
+
+            <TextView
+                app:layout_constraintTop_toBottomOf="@+id/fromData"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintRight_toLeftOf="@+id/toData"
+
+                app:layout_constraintLeft_toRightOf="@+id/emptyVertical"
+                android:id="@+id/fromData"
+                android:layout_width="130dp"
+                android:layout_height="350dp"
+                android:hint="Audio Data"
+                android:textAlignment="center"
+                android:background="#ffffda"
+                android:layout_margin="10dp"
+                android:padding="10dp"
+                tools:ignore="MissingConstraints,NotSibling" />
+
+        <TextView
+            app:layout_constraintTop_toBottomOf="@+id/toData"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toRightOf="@+id/fromLang"
+            app:layout_constraintRight_toRightOf="parent"
+
+            android:id="@+id/toData"
+            android:layout_width="130dp"
+            android:layout_height="350dp"
+            android:hint="Translated Data"
+            android:textAlignment="center"
+            android:background="#ffffda"
+            android:layout_margin="10dp"
+            android:padding="10dp"
+            tools:ignore="MissingConstraints,NotSibling" />
+
+    <!--
+              <TextView
+                  android:id="@+id/fromData"
+                  android:layout_width="100dp"
+                  android:layout_height="match_parent"
+                  android:hint="Audio Data"
+                  android:textAlignment="center"
+                  android:background="#ffffda"
+                  android:layout_margin="10dp"
+                  />
+
+      -->
+</android.support.constraint.ConstraintLayout>

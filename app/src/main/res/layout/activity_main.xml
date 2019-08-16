@@ -19,7 +19,7 @@
             android:id="@+id/sourceSpinner"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="3dp"
+            android:layout_margin="5dp"
             android:textAlignment="center"
             android:spinnerMode="dropdown">
 
@@ -35,7 +35,7 @@
             android:id="@+id/destSpinner"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="3dp"
+            android:layout_margin="5dp"
             android:textAlignment="center"
             android:spinnerMode="dropdown">
 
@@ -51,7 +51,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="35sp"
-            android:layout_margin="5dp"
+            android:layout_margin="10dp"
             android:textColor="@android:color/darker_gray"
             android:layout_gravity="center_horizontal"
             />
@@ -142,10 +142,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text="Translate"
-            android:layout_margin="3dp"
+            android:text="Upload"
+            android:layout_margin="10dp"
             android:background="#ffffff"/>
-
+<!--
         <TextView
             android:layout_width="match_parent"
             android:layout_height="200dp"
@@ -161,7 +161,7 @@
             android:background="#ffffda"
             android:textAlignment="center"
             android:layout_margin="10dp"/>
-
+-->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="5dp"
