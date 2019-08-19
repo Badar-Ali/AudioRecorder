@@ -71,6 +71,8 @@ public class TranslateActivity extends AppCompatActivity implements View.OnClick
     String downloadLink;
     String fileeName;
     DatabaseReference mDatabaseRef;
+    String fromSpinner;
+    String toSpinner;
 
 
     @Override
@@ -126,6 +128,7 @@ public class TranslateActivity extends AppCompatActivity implements View.OnClick
         sourceSpinner.setAdapter(srcAdapter);
         destSpinner.setAdapter(destAdapter);
 
+
         imageViewRecord.setOnClickListener(this);
         imageViewStop.setOnClickListener(this);
         imageViewPlay.setOnClickListener(this);
@@ -166,25 +169,27 @@ public class TranslateActivity extends AppCompatActivity implements View.OnClick
                             String fromData = dataSnapshot.child(destLanguage).getValue(String.class);
 
 
+
                             Toast.makeText(context, "To Data: " + toData, Toast.LENGTH_LONG).show();
                             Toast.makeText(context, "From Data: " + fromData, Toast.LENGTH_LONG).show();
 
-                            if (toData != null && fromData != null) {
-                                String[] toCommaSeparated = toData.split(",");
-                                String[] fromCommaSeparated = fromData.split(",");
+                            if (toData != null && fromData != null && !toData.equals("") && !fromData.equals("")) {
+//                                String[] toCommaSeparated = toData.split(",");
+//                                String[] fromCommaSeparated = fromData.split(",");
 
                                 Intent i = new Intent(context, translatedList.class);
-                                i.putExtra("toData", toCommaSeparated);
-                                i.putExtra("fromData", fromCommaSeparated);
+//                                Toast.makeText(context,"to comma sperated: " + toCommaSeparated.toString(), Toast.LENGTH_LONG)
+                                i.putExtra("toData", toData);
+                                i.putExtra("fromData", fromData);
                                 i.putExtra("srcLanguage", srcLanguage);
                                 i.putExtra("destLanguage", destLanguage);
                                 context.startActivity(i);
 
-                            } else if (toData == null && fromData == null) {
+                            } else{
 
                                 Intent i = new Intent(context, translatedList.class);
-                                i.putExtra("toData", "No translated words found in audio");
-                                i.putExtra("fromData", "No words found in audio");
+                                i.putExtra("toData", "No,translated,words,found,in,audio");
+                                i.putExtra("fromData", "No,words,found,in,audio");
                                 i.putExtra("srcLanguage", srcLanguage);
                                 i.putExtra("destLanguage", destLanguage);
                                 context.startActivity(i);

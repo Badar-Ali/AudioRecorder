@@ -207,6 +207,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 DatabaseReference audiosRef = mDatabaseRef.child("Audio").child(audioFile);
 
                 audiosRef.setValue(filName);
+                /*String from = (String) sourceSpinner.getSelectedItem();
+                String to = (String) destSpinner.getSelectedItem();
+
+                DatabaseReference audiosRef2 = mDatabaseRef.child("SrcLangInfo").child(filName);
+                audiosRef2.child("to").setValue(to);
+                audiosRef2.child("from").setValue(from);
+*/
+                //DatabaseReference audiosRef3 = mDatabaseRef.child("ScrLangInfo").child(audioFile).child("to");
+                //audiosRef2.setValue(to);
+                //audiosRef2.child("from").setValue(from);
+
                 Toast.makeText(context,"Written to Database",Toast.LENGTH_LONG).show();
             }
             catch (Exception e)

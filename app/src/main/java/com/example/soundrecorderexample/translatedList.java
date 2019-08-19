@@ -2,7 +2,12 @@ package com.example.soundrecorderexample;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.RecyclerView;
+import android.util.Log;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class translatedList extends AppCompatActivity {
     private String toData;
@@ -10,8 +15,8 @@ public class translatedList extends AppCompatActivity {
     private String srcLang;
     private String destLang;
 
-    private TextView toDataText;
-    private TextView fromDataText;
+    private ListView toDataText;
+    private ListView fromDataText;
     private TextView toLangText;
     private TextView fromLangText;
 
@@ -30,8 +35,21 @@ public class translatedList extends AppCompatActivity {
         toLangText = findViewById(R.id.toLang);
         fromLangText = findViewById(R.id.fromLang);
 
-        toDataText.setText(toData);
-        fromDataText.setText(fromData);
+        String[] toCommaSeparated = toData.split(",");
+        String[] fromCommaSeparated = fromData.split(",");
+
+        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(this, R.layout.list_item, R.id.text_in_list ,toCommaSeparated);
+        toDataText.setAdapter(arrayAdapter);
+
+        ArrayAdapter<String> arrayAdapter2 = new ArrayAdapter<>(this, R.layout.list_item, R.id.text_in_list ,fromCommaSeparated);
+        fromDataText.setAdapter(arrayAdapter2);
+
+//        for (String a : toCommaSeparated) {
+//            //Toast.makeText(this,"Values: " )
+//        }
+
+//        toDataText.setText(toData);
+//        fromDataText.setText(fromData);
         toLangText.setText(destLang);
         fromLangText.setText(srcLang);
 
