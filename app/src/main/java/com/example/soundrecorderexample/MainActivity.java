@@ -1,5 +1,6 @@
 package com.example.soundrecorderexample;
 import android.Manifest;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -7,13 +8,13 @@ import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.transition.TransitionManager;
 import android.util.Log;
@@ -31,10 +32,8 @@ import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
@@ -65,6 +64,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private StorageReference mStorageRef;
     private int counter = 0;
     private int databaseCounter = 0;
+    private ProgressDialog progressDialog;
     String downloadLink;
     DatabaseReference mDatabaseRef;
 
@@ -122,6 +122,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void onClick(View v) {
                 Toast.makeText(context, "Translate Button Clicked",Toast.LENGTH_LONG).show();
+                progressDialog = new ProgressDialog(context);
+                progressDialog.setTitle("Please Wait!");
+                progressDialog.setMessage("Wait");
+                progressDialog.setCancelable(false);
+                progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+                progressDialog.show();
 
                 int srcPos = sourceSpinner.getSelectedItemPosition();
                 int destPos = destSpinner.getSelectedItemPosition();
@@ -164,6 +170,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                             audiosRef.child("uri").setValue(downloadLink);
                                             audiosRef.child("pressed").setValue(1);
                                             audiosRef.child("fname").setValue(fName);
+                                            progressDialog.dismiss();
 
                                             writeFileToDatabase(fName);
                                             counter = 0;
