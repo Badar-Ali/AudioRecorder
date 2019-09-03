@@ -146,14 +146,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 @Override
                                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                                     // Get a URL to the uploaded content
-                                    Toast.makeText(context, "File Uploaded", Toast.LENGTH_SHORT).show();
+                                    //Toast.makeText(context, "File Uploaded", Toast.LENGTH_SHORT).show();
 
                                     //Task<Uri> urlTask = taskSnapshot.getStorage().getDownloadUrl();
                                     taskSnapshot.getStorage().getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                                         @Override
                                         public void onSuccess(Uri pUri) {
                                             downloadLink = String.valueOf("gs://speechtranslate-40b4d.appspot.com/" + pUri.getLastPathSegment());
-                                            Toast.makeText(context, "File Link: " + downloadLink, Toast.LENGTH_SHORT).show();
+                                            //Toast.makeText(context, "File Link: " + downloadLink, Toast.LENGTH_SHORT).show();
 
                                             DatabaseReference audiosRef = mDatabaseRef.child("Translate");
 
@@ -170,7 +170,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                             audiosRef.child("uri").setValue(downloadLink);
                                             audiosRef.child("pressed").setValue(1);
                                             audiosRef.child("fname").setValue(fName);
-                                            progressDialog.dismiss();
+
 
                                             writeFileToDatabase(fName);
                                             counter = 0;
@@ -263,8 +263,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     DataChangeCounter++;
                     Log.i("AAA", "" + DataChangeCounter);
-                    if (DataChangeCounter == 2) {
-                        Toast.makeText(context, "On Data Change Called." + DataChangeCounter, Toast.LENGTH_LONG).show();
+                    if (DataChangeCounter > 1) {
+                        //Toast.makeText(context, "On Data Change Called." + DataChangeCounter, Toast.LENGTH_LONG).show();
                         if (dataSnapshot.hasChildren()) {
 
                             translationRef.removeEventListener(this);
