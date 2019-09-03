@@ -263,7 +263,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     DataChangeCounter++;
                     Log.i("AAA", "" + DataChangeCounter);
-                    if (DataChangeCounter > 1) {
+                    if (DataChangeCounter == 2 || DataChangeCounter == 3) {
+                        DataChangeCounter = 0;
                         //Toast.makeText(context, "On Data Change Called." + DataChangeCounter, Toast.LENGTH_LONG).show();
                         if (dataSnapshot.hasChildren()) {
 
