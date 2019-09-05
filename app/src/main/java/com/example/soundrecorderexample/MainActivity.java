@@ -68,6 +68,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     String downloadLink;
     DatabaseReference mDatabaseRef;
     int DataChangeCounter = 0;
+    long timePassed = 0;
 
 
     @Override
@@ -81,17 +82,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         context = this;
         mStorageRef = FirebaseStorage.getInstance().getReference();
         mDatabaseRef = FirebaseDatabase.getInstance().getReference();
+        lastProgress = 0;
         initViews();
 
     }
 
     private void initViews() {
 
-        /** setting up the toolbar
+        // setting up the toolbar
          toolbar = (Toolbar) findViewById(R.id.toolbar);
-         toolbar.setTitle("Voice Recorder");
-         toolbar.setTitleTextColor(getResources().getColor(android.R.color.black));
-         setSupportActionBar(toolbar);**/
+         toolbar.setTitle("Speech Translation");
+         setSupportActionBar(toolbar);
 
         linearLayoutRecorder = (LinearLayout) findViewById(R.id.linearLayoutRecorder);
         chronometer = (Chronometer) findViewById(R.id.chronometerTimer);
@@ -101,6 +102,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         imageViewPlay = (ImageView) findViewById(R.id.imageViewPlay);
         imageViewCancel = (ImageView) findViewById(R.id.imageViewCancel);
         linearLayoutPlay = (LinearLayout) findViewById(R.id.linearLayoutPlay);
+        linearLayoutPlay.setVisibility(View.GONE);
         seekBar = (SeekBar) findViewById(R.id.seekBar);
         sourceSpinner = findViewById(R.id.sourceSpinner);
         destSpinner = findViewById(R.id.destSpinner);
@@ -109,6 +111,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         String[] srclanguages = new String[]{"Select Source Language", "English", "German", "Russian", "Italian", "Spanish","Japanese","Swedish"};
         String[] destlanguages = new String[]{"Select Destination Language", "English", "German", "Russian", "Italian", "Spanish","Japanese","Swedish"};
+
         ArrayAdapter<String> srcAdapter = new ArrayAdapter<>(this, R.layout.support_simple_spinner_dropdown_item, srclanguages);
         final ArrayAdapter<String> destAdapter = new ArrayAdapter<>(this, R.layout.support_simple_spinner_dropdown_item, destlanguages);
         sourceSpinner.setAdapter(srcAdapter);
@@ -378,19 +381,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         counter = 0;
     }
 
-    private void stopPlaying() {
-        try {
-            mPlayer.release();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        mPlayer = null;
-        //showing the play button
-        imageViewPlay.setImageResource(R.drawable.ic_media_play);
-        chronometer.stop();
-
-    }
-
     private void startRecording() {
         mRecorder = new MediaRecorder();
         mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
@@ -458,6 +448,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
+    private void stopPlaying() {
+        try {
+            mPlayer.release();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        mPlayer = null;
+        //showing the play button
+        imageViewPlay.setImageResource(R.drawable.ic_media_play);
+
+        chronometer.stop();
+        //chronometer.setBase(SystemClock.elapsedRealtime());
+        //lastProgress = 0;
+        //seekBar.setProgress(lastProgress);
+
+
+    }
 
     private void startPlaying() {
         mPlayer = new MediaPlayer();
@@ -471,12 +478,29 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         //making the imageview pause button
         imageViewPlay.setImageResource(R.drawable.ic_media_pause);
 
+
+
         seekBar.setProgress(lastProgress);
         mPlayer.seekTo(lastProgress);
         seekBar.setMax(mPlayer.getDuration());
         seekUpdation();
-        chronometer.start();
 
+
+        int stoppedMilliseconds = 0;
+
+        String chronoText = chronometer.getText().toString();
+        String array[] = chronoText.split(":");
+        if (array.length == 2) {
+            stoppedMilliseconds = Integer.parseInt(array[0]) * 60 * 1000
+                    + Integer.parseInt(array[1]) * 1000;
+        } else if (array.length == 3) {
+            stoppedMilliseconds = Integer.parseInt(array[0]) * 60 * 60 * 1000
+                    + Integer.parseInt(array[1]) * 60 * 1000
+                    + Integer.parseInt(array[2]) * 1000;
+        }
+
+        chronometer.setBase(SystemClock.elapsedRealtime() - stoppedMilliseconds);
+        chronometer.start();
 
         mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
@@ -484,6 +508,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 imageViewPlay.setImageResource(R.drawable.ic_media_play);
                 isPlaying = false;
                 chronometer.stop();
+                chronometer.setBase(SystemClock.elapsedRealtime());
+                lastProgress = 0;
+                seekBar.setProgress(lastProgress);
             }
         });
 

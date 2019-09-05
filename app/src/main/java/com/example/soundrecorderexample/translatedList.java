@@ -2,11 +2,14 @@ package com.example.soundrecorderexample;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
 public class translatedList extends AppCompatActivity {
+    private Toolbar toolbar;
     private String toData;
     private String fromData;
     private String srcLang;
@@ -22,6 +25,19 @@ public class translatedList extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_translated_list);
 
+
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar.setTitle("Speech Translation");
+        setSupportActionBar(toolbar);
+        //getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        //getSupportActionBar().setHomeAsUpIndicator(R.color.colorWhite);
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onBackPressed();
+
+            }
+        });
         toData = getIntent().getStringExtra("toData");
         fromData = getIntent().getStringExtra("fromData");
         srcLang = getIntent().getStringExtra("srcLanguage");

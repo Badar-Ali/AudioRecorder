@@ -371,21 +371,6 @@ public class TranslateActivity extends AppCompatActivity implements View.OnClick
         counter = 0;
     }
 
-    private void stopPlaying() {
-        try{
-            mPlayer.release();
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-        mPlayer = null;
-        //showing the play button
-        imageViewPlay.setImageResource(R.drawable.ic_media_play);
-        chronometer.stop();
-        chronometer.setBase(SystemClock.elapsedRealtime());
-        lastProgress = 0;
-        seekBar.setProgress(lastProgress);
-
-    }
 
     private void startRecording() {
         mRecorder = new MediaRecorder();
@@ -452,6 +437,22 @@ public class TranslateActivity extends AppCompatActivity implements View.OnClick
 
 
     }
+    private void stopPlaying() {
+        try{
+            mPlayer.release();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        mPlayer = null;
+        //showing the play button
+        imageViewPlay.setImageResource(R.drawable.ic_media_play);
+        chronometer.stop();
+        chronometer.setBase(SystemClock.elapsedRealtime());
+        lastProgress = 0;
+        seekBar.setProgress(lastProgress);
+
+    }
+
 
 
     private void startPlaying() {

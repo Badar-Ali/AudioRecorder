@@ -6,6 +6,19 @@
     android:layout_height="match_parent"
     tools:context=".translatedList">
 
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/colorBlack"
+        android:elevation="4dp"
+        app:titleTextColor="@color/colorWhite"
+        app:navigationIcon="@drawable/ic_arrow_back_white_14dp"
+        android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+        tools:ignore="MissingConstraints" />
+
+
     <TextView
             android:id="@+id/empty"
             android:layout_width="match_parent"
@@ -13,75 +26,75 @@
             android:layout_margin="5dp"
             tools:ignore="MissingConstraints" />
 
-    <TextView
-        android:id="@+id/emptyVertical"
-        android:layout_width="1dp"
-        android:layout_height="match_parent"
-        android:layout_margin="5dp"
-        tools:ignore="MissingConstraints" />
 
     <TextView
-            app:layout_constraintTop_toBottomOf="@+id/empty"
-            app:layout_constraintBottom_toTopOf="@+id/fromData"
-            app:layout_constraintLeft_toRightOf="@+id/emptyVertical"
-            app:layout_constraintRight_toLeftOf="@+id/toLang"
-            android:id="@+id/fromLang"
+        android:id="@+id/fromLang"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:padding="10dp"
+        android:text="fromLanguage"
+        android:textAlignment="center"
+        android:textColor="#000000"
+        android:textSize="20dp"
+        android:textStyle="bold"
 
-            android:layout_width="130dp"
-            android:layout_height="wrap_content"
-            android:text="fromLanguage"
-            android:textColor="#000000"
-            android:textAlignment="center"
-            android:layout_margin="10dp"
-            android:padding="10dp"
-            tools:ignore="MissingConstraints" />
+        app:layout_constraintBottom_toTopOf="@+id/fromData"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toLeftOf="@+id/toLang"
+        app:layout_constraintTop_toBottomOf="@+id/empty"/>
+
 
     <TextView
-            app:layout_constraintTop_toBottomOf="@+id/empty"
-            app:layout_constraintLeft_toRightOf="@+id/fromLang"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintBottom_toTopOf="@+id/toData"
-            android:id="@+id/toLang"
-            android:layout_width="130dp"
-            android:layout_height="wrap_content"
-            android:text="toLanguage"
-            android:textColor="#000000"
-            android:textAlignment="center"
-            android:layout_margin="10dp"
-            android:padding="10dp"
-            tools:ignore="MissingConstraints" />
+        android:id="@+id/toLang"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:padding="10dp"
+        android:text="toLanguage"
+        android:textAlignment="center"
+        android:textColor="#000000"
+        android:textSize="20dp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/toData"
+        app:layout_constraintLeft_toRightOf="@+id/fromLang"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/empty" />
 
-
-
-            <ListView
-                app:layout_constraintTop_toBottomOf="@+id/fromData"
+    <ListView
+                app:layout_constraintTop_toBottomOf="@+id/fromLang"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintRight_toLeftOf="@+id/toData"
-
-                app:layout_constraintLeft_toRightOf="@+id/emptyVertical"
+                app:layout_constraintLeft_toLeftOf="parent"
                 android:id="@+id/fromData"
-                android:layout_width="130dp"
-                android:layout_height="350dp"
+                android:layout_width="170dp"
+                android:foregroundGravity="center_horizontal"
+                android:layout_height="420dp"
                 android:textAlignment="center"
-                android:background="#ffffda"
-                android:layout_margin="10dp"
-                android:padding="10dp"
-                tools:ignore="MissingConstraints,NotSibling" />
-
+                android:background="#ffffff"
+                android:layout_margin="5dp"
+                android:padding="5dp"/>
+<TextView
+    android:layout_width="3dp"
+    android:layout_height="410dp"
+    android:background="#000000"
+    app:layout_constraintLeft_toRightOf="@+id/toData"
+    app:layout_constraintRight_toLeftOf="@+id/fromData"
+    app:layout_constraintTop_toBottomOf="@+id/toLang"
+    app:layout_constraintBottom_toBottomOf="parent"/>
         <ListView
-            app:layout_constraintTop_toBottomOf="@+id/toData"
+            app:layout_constraintTop_toBottomOf="@+id/toLang"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintLeft_toRightOf="@+id/fromLang"
+            app:layout_constraintLeft_toRightOf="@+id/fromData"
             app:layout_constraintRight_toRightOf="parent"
-
+            android:foregroundGravity="center_horizontal"
             android:id="@+id/toData"
-            android:layout_width="130dp"
-            android:layout_height="350dp"
+            android:layout_width="170dp"
+            android:layout_height="420dp"
             android:textAlignment="center"
-            android:background="#ffffda"
-            android:layout_margin="10dp"
-            android:padding="10dp"
-            tools:ignore="MissingConstraints,NotSibling" />
+            android:background="#ffffff"
+            android:layout_margin="5dp"
+            android:padding="5dp"/>
 
     <!--
               <TextView

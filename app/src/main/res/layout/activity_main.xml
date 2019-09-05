@@ -3,10 +3,24 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@android:color/white">
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="#000000"
+        android:elevation="4dp"
+        app:titleTextColor="#ffffff"
+        android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
+
 <ScrollView
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:layout_below="@+id/toolbar"
+    android:layout_margin="15dp"
+    >
     <LinearLayout
         android:id="@+id/linearLayoutRecorder"
         android:layout_width="match_parent"
@@ -37,6 +51,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
             android:textAlignment="center"
+
             android:spinnerMode="dropdown">
 
         </Spinner>
@@ -142,7 +157,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text="Upload"
+            android:text="Translate"
+            android:textStyle="bold"
             android:layout_margin="10dp"
             android:background="#ffffff"/>
 <!--
