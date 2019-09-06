@@ -58,7 +58,6 @@ public class translatedList extends AppCompatActivity {
         ArrayAdapter<String> arrayAdapter2 = new ArrayAdapter<>(this, R.layout.list_item, R.id.text_in_list ,fromCommaSeparated);
         fromDataText.setAdapter(arrayAdapter2);
 
-
 //        for (String a : toCommaSeparated) {
 //            //Toast.makeText(this,"Values: " )
 //        }
