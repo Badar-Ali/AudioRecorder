@@ -113,9 +113,7 @@ public class RecordingAdapter  extends RecyclerView.Adapter<RecordingAdapter.Vie
             textViewName = itemView.findViewById(R.id.textViewRecordingname);
             deleteRecording = itemView.findViewById(R.id.deleteRecording);
 
-
             translateRecording = itemView.findViewById(R.id.translateRecording);
-
             translateRecording.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {

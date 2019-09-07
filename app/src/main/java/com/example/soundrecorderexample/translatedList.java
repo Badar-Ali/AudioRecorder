@@ -19,8 +19,6 @@ public class translatedList extends AppCompatActivity {
     private ListView fromDataText;
     private TextView toLangText;
     private TextView fromLangText;
-    private TextView nowords;
-    private TextView separator;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,40 +47,26 @@ public class translatedList extends AppCompatActivity {
         fromDataText = findViewById(R.id.fromData);
         toLangText = findViewById(R.id.toLang);
         fromLangText = findViewById(R.id.fromLang);
-        nowords = findViewById(R.id.nowords);
-        separator = findViewById(R.id.separator);
-
-        if (toData != null && fromData != null && !toData.equals("") && !fromData.equals("")) {
-            nowords.setVisibility(View.GONE);
-            toLangText.setVisibility(View.VISIBLE);
-            fromLangText.setVisibility(View.VISIBLE);
-            toDataText.setVisibility(View.VISIBLE);
-            fromDataText.setVisibility(View.VISIBLE);
-            separator.setVisibility(View.VISIBLE);
 
 
-            String[] toCommaSeparated = toData.split(",");
-            String[] fromCommaSeparated = fromData.split(",");
+        String[] toCommaSeparated = toData.split(",");
+        String[] fromCommaSeparated = fromData.split(",");
 
-            ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(this, R.layout.list_item, R.id.text_in_list, toCommaSeparated);
-            toDataText.setAdapter(arrayAdapter);
+        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(this, R.layout.list_item, R.id.text_in_list ,toCommaSeparated);
+        toDataText.setAdapter(arrayAdapter);
 
-            ArrayAdapter<String> arrayAdapter2 = new ArrayAdapter<>(this, R.layout.list_item, R.id.text_in_list, fromCommaSeparated);
-            fromDataText.setAdapter(arrayAdapter2);
+        ArrayAdapter<String> arrayAdapter2 = new ArrayAdapter<>(this, R.layout.list_item, R.id.text_in_list ,fromCommaSeparated);
+        fromDataText.setAdapter(arrayAdapter2);
 
-            toLangText.setText(destLang);
-            fromLangText.setText(srcLang);
-        }
 
-        else
-        {
-            toDataText.setVisibility(View.GONE);
-            fromDataText.setVisibility(View.GONE);
-            toLangText.setVisibility(View.GONE);
-            fromLangText.setVisibility(View.GONE);
-            separator.setVisibility(View.GONE);
-            nowords.setVisibility(View.VISIBLE);
-        }
+//        for (String a : toCommaSeparated) {
+//            //Toast.makeText(this,"Values: " )
+//        }
+
+//        toDataText.setText(toData);
+//        fromDataText.setText(fromData);
+        toLangText.setText(destLang);
+        fromLangText.setText(srcLang);
 
 
     }
