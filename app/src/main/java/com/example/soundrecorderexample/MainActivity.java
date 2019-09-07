@@ -268,7 +268,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Log.i("AAA", "" + DataChangeCounter);
                     if (DataChangeCounter == 2 || DataChangeCounter == 3) {
                         DataChangeCounter = 0;
-                        //Toast.makeText(context, "On Data Change Called." + DataChangeCounter, Toast.LENGTH_LONG).show();
+
                         if (dataSnapshot.hasChildren()) {
 
                             translationRef.removeEventListener(this);
@@ -278,15 +278,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             String toData = dataSnapshot.child(destLanguage).getValue(String.class);
 
 
-                            //Toast.makeText(context, "To Data: " + toData, Toast.LENGTH_LONG).show();
-                            //Toast.makeText(context, "From Data: " + fromData, Toast.LENGTH_LONG).show();
-
-                            if (toData != null && fromData != null && !toData.equals("") && !fromData.equals("")) {
-//                                String[] toCommaSeparated = toData.split(",");
-//                                String[] fromCommaSeparated = fromData.split(",");
-
                                 Intent i = new Intent(context, translatedList.class);
-//                                Toast.makeText(context,"to comma sperated: " + toCommaSeparated.toString(), Toast.LENGTH_LONG)
                                 i.putExtra("toData", toData);
                                 i.putExtra("fromData", fromData);
                                 i.putExtra("srcLanguage", srcLanguage);
@@ -294,21 +286,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 progressDialog.dismiss();
 
                                 context.startActivity(i);
-
-                            } else {
-
-                                Intent i = new Intent(context, translatedList.class);
-                                i.putExtra("toData", "No,translated,words,found,in,audio");
-                                i.putExtra("fromData", "No,words,found,in,audio");
-                                i.putExtra("srcLanguage", srcLanguage);
-                                i.putExtra("destLanguage", destLanguage);
-                                progressDialog.dismiss();
-
-                                context.startActivity(i);
-
-                            }
-                            //Toast.makeText(context,"To Data: "+ toCommaSeparated,Toast.LENGTH_LONG).show();
-                            //Toast.makeText(context,"From Data: "+ fromCommaSeparated,Toast.LENGTH_LONG).show();
 
                         }
                     }
