@@ -19,6 +19,10 @@ public class translatedList extends AppCompatActivity {
     private ListView fromDataText;
     private TextView toLangText;
     private TextView fromLangText;
+    private TextView separator;
+    private TextView nowords;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,8 +33,6 @@ public class translatedList extends AppCompatActivity {
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitle("Speech Translation");
         setSupportActionBar(toolbar);
-        //getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        //getSupportActionBar().setHomeAsUpIndicator(R.color.colorWhite);
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -47,26 +49,34 @@ public class translatedList extends AppCompatActivity {
         fromDataText = findViewById(R.id.fromData);
         toLangText = findViewById(R.id.toLang);
         fromLangText = findViewById(R.id.fromLang);
+        separator = findViewById(R.id.separator);
+        nowords = findViewById(R.id.nowords);
 
 
-        String[] toCommaSeparated = toData.split(",");
-        String[] fromCommaSeparated = fromData.split(",");
+        if(!toData.isEmpty() && !fromData.isEmpty()) {
 
-        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(this, R.layout.list_item, R.id.text_in_list ,toCommaSeparated);
-        toDataText.setAdapter(arrayAdapter);
+            String[] toCommaSeparated = toData.split(",");
+            String[] fromCommaSeparated = fromData.split(",");
 
-        ArrayAdapter<String> arrayAdapter2 = new ArrayAdapter<>(this, R.layout.list_item, R.id.text_in_list ,fromCommaSeparated);
-        fromDataText.setAdapter(arrayAdapter2);
+            ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(this, R.layout.list_item, R.id.text_in_list, toCommaSeparated);
+            toDataText.setAdapter(arrayAdapter);
 
-//        for (String a : toCommaSeparated) {
-//            //Toast.makeText(this,"Values: " )
-//        }
+            ArrayAdapter<String> arrayAdapter2 = new ArrayAdapter<>(this, R.layout.list_item, R.id.text_in_list, fromCommaSeparated);
+            fromDataText.setAdapter(arrayAdapter2);
 
-//        toDataText.setText(toData);
-//        fromDataText.setText(fromData);
-        toLangText.setText(destLang);
-        fromLangText.setText(srcLang);
+            toLangText.setText(destLang);
+            fromLangText.setText(srcLang);
+        }
 
+        else {
+            nowords.setVisibility(View.VISIBLE);
+            toDataText.setVisibility(View.GONE);
+            fromDataText.setVisibility(View.GONE);
+            toLangText.setVisibility(View.GONE);
+            fromLangText.setVisibility(View.GONE);
+            separator.setVisibility(View.GONE);
+
+        }
 
     }
 
