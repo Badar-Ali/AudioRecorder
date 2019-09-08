@@ -1,12 +1,23 @@
 package com.example.soundrecorderexample;
 
+import android.content.Context;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+
+import java.io.File;
 
 public class translatedList extends AppCompatActivity {
     private Toolbar toolbar;
@@ -21,7 +32,10 @@ public class translatedList extends AppCompatActivity {
     private TextView fromLangText;
     private TextView separator;
     private TextView nowords;
-
+    StorageReference mStorageRef;
+    String child;
+    String fName;
+    Context context;
 
 
     @Override
@@ -29,7 +43,7 @@ public class translatedList extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_translated_list);
 
-
+        context = this;
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitle("Speech Translation");
         setSupportActionBar(toolbar);
@@ -40,10 +54,17 @@ public class translatedList extends AppCompatActivity {
 
             }
         });
+        mStorageRef = FirebaseStorage.getInstance().getReference();
+
         toData = getIntent().getStringExtra("toData");
         fromData = getIntent().getStringExtra("fromData");
         srcLang = getIntent().getStringExtra("srcLanguage");
         destLang = getIntent().getStringExtra("destLanguage");
+        child = getIntent().getStringExtra("child");
+        fName = getIntent().getStringExtra("fName");
+
+        Toast.makeText(this,"Child path:" + child,Toast.LENGTH_LONG).show();
+
 
         toDataText = findViewById(R.id.toData);
         fromDataText = findViewById(R.id.fromData);
@@ -66,6 +87,7 @@ public class translatedList extends AppCompatActivity {
 
             toLangText.setText(destLang);
             fromLangText.setText(srcLang);
+
         }
 
         else {
@@ -78,6 +100,47 @@ public class translatedList extends AppCompatActivity {
 
         }
 
+        StorageReference desertRef = mStorageRef.child(child);
+
+        desertRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                Toast.makeText(context,"Child Deleted " + child,Toast.LENGTH_LONG).show();
+                DeleteRecording(fName);
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception exception) {
+            }
+        });
+
     }
+    private void DeleteRecording(String fName) {
+
+
+        File root = android.os.Environment.getExternalStorageDirectory();
+        String path = root.getAbsolutePath() + "/VoiceRecorderSimplifiedCoding/Audios";
+        Log.d("Files", "Path: " + path);
+        File directory = new File(path);
+        File[] files = directory.listFiles();
+        Log.d("Files", "Size: " + files.length);
+        if (files != null) {
+
+            for (int i = 0; i < files.length; i++) {
+
+                Log.d("Files", "FileName:" + files[i].getName());
+                String fileName = files[i].getName();
+                String recordingUri = root.getAbsolutePath() + "/VoiceRecorderSimplifiedCoding/Audios/" + fileName;
+
+                if (fileName.equals(fName)) {
+                    files[i].delete();
+                    Toast.makeText(context,"File Deleted from File Storage",Toast.LENGTH_LONG).show();
+                }
+            }
+
+        }
+
+    }
+
 
 }

@@ -69,6 +69,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     DatabaseReference mDatabaseRef;
     int DataChangeCounter = 0;
     long timePassed = 0;
+    String uploadfileName;
 
 
     @Override
@@ -89,7 +90,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void initViews() {
 
-        // setting up the toolbar
          toolbar = (Toolbar) findViewById(R.id.toolbar);
          toolbar.setTitle("Speech Translation");
          setSupportActionBar(toolbar);
@@ -125,7 +125,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         trasnlateBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //Toast.makeText(context, "Translate Button Clicked",Toast.LENGTH_LONG).show();
                 progressDialog = new ProgressDialog(context);
                 progressDialog.setTitle("Please Wait!");
                 progressDialog.setMessage("Wait");
@@ -137,7 +136,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 int destPos = destSpinner.getSelectedItemPosition();
 
                 if (fileName != null && counter == 1 && srcPos > 0 && destPos > 0) {
-                    final String uploadfileName = "Audios/" + fName;
+                    uploadfileName = "Audios/" + fName;
 
                     final Uri file = Uri.fromFile(new File(fileName));
 
@@ -148,25 +147,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                                 @Override
                                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                                    // Get a URL to the uploaded content
-                                    //Toast.makeText(context, "File Uploaded", Toast.LENGTH_SHORT).show();
 
-                                    //Task<Uri> urlTask = taskSnapshot.getStorage().getDownloadUrl();
                                     taskSnapshot.getStorage().getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                                         @Override
                                         public void onSuccess(Uri pUri) {
                                             downloadLink = String.valueOf("gs://speechtranslate-40b4d.appspot.com/" + pUri.getLastPathSegment());
-                                            //Toast.makeText(context, "File Link: " + downloadLink, Toast.LENGTH_SHORT).show();
 
                                             DatabaseReference audiosRef = mDatabaseRef.child("Translate");
 
                                             String srcLanguage = sourceSpinner.getSelectedItem().toString();
                                             String destLanguage = destSpinner.getSelectedItem().toString();
                                             String btnPressed = "" + counter;
-
-                                            //Toast.makeText(context, "Real time Database" , Toast.LENGTH_LONG).show();
-                                            //Toast.makeText(context, "Selected Source Language: " + srcLanguage, Toast.LENGTH_LONG).show();
-                                            //Toast.makeText(context, "Selected Destination Language: " + destLanguage, Toast.LENGTH_LONG).show();
 
                                             audiosRef.child("from").setValue(srcLanguage);
                                             audiosRef.child("to").setValue(destLanguage);
@@ -179,17 +170,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                             counter = 0;
                                         }
                                     });
-                                    //databaseCounter = 1;
-                                    //counter = 0;
                                 }
                             })
                             .addOnFailureListener(new OnFailureListener() {
                                 @Override
                                 public void onFailure(@NonNull Exception exception) {
-                                    // Handle unsuccessful uploads
-                                    // ...
                                     Toast.makeText(context, "File Unable to Upload!!!!!", Toast.LENGTH_LONG).show();
-
                                 }
                             });
 
@@ -209,27 +195,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void writeFileToDatabase(String filName) {
 
-
         if (fName != null && !fName.isEmpty() && filName != null && !filName.isEmpty()) {
             try {
                 String audioFile = fName.replace(".", ",");
                 DatabaseReference audiosRef = mDatabaseRef.child("Audio").child(audioFile);
 
                 audiosRef.setValue(filName);
-                /*String from = (String) sourceSpinner.getSelectedItem();
-                String to = (String) destSpinner.getSelectedItem();
-
-                DatabaseReference audiosRef2 = mDatabaseRef.child("SrcLangInfo").child(filName);
-                audiosRef2.child("to").setValue(to);
-                audiosRef2.child("from").setValue(from);
-*/
-                //DatabaseReference audiosRef3 = mDatabaseRef.child("ScrLangInfo").child(audioFile).child("to");
-                //audiosRef2.setValue(to);
-                //audiosRef2.child("from").setValue(from);
                 translateAudio();
 
-                //Toast.makeText(context,"Written to Database",Toast.LENGTH_LONG).show();
-            } catch (Exception e) {
+    } catch (Exception e) {
                 Toast.makeText(context, "Exception: " + e, Toast.LENGTH_LONG).show();
             }
         }
@@ -245,10 +219,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         String filename = fName;
         String filName = TrimFileName(filename);
 
-        //Toast.makeText(context, "FName: " + fName, Toast.LENGTH_LONG).show();
-        //Toast.makeText(context, "Trimmed File Name: " + filName, Toast.LENGTH_LONG).show();
-
-
         final int srcPos = sourceSpinner.getSelectedItemPosition();
         final int destPos = sourceSpinner.getSelectedItemPosition();
 
@@ -259,7 +229,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             final DatabaseReference translationRef = FirebaseDatabase.getInstance().getReference().child("Translations").child(filName);
             translationRef.child("waiting").setValue(1);
-
 
             translationRef.addValueEventListener(new ValueEventListener() {
                 @Override
@@ -277,12 +246,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             String fromData = dataSnapshot.child(srcLanguage).getValue(String.class);
                             String toData = dataSnapshot.child(destLanguage).getValue(String.class);
 
-
                                 Intent i = new Intent(context, translatedList.class);
                                 i.putExtra("toData", toData);
                                 i.putExtra("fromData", fromData);
                                 i.putExtra("srcLanguage", srcLanguage);
                                 i.putExtra("destLanguage", destLanguage);
+                                i.putExtra("child",uploadfileName);
+                                i.putExtra("fName",fName);
                                 progressDialog.dismiss();
 
                                 context.startActivity(i);
@@ -297,13 +267,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
             });
         }
-    }
-
-
-    private void gotoRecodingListActivity() {
-        Intent intent = new Intent(this, RecordingListActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(intent);
     }
 
     @Override
@@ -383,8 +346,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         lastProgress = 0;
         seekBar.setProgress(0);
         stopPlaying();
-        // making the imageview a stop button
-        //starting the chronometer
         chronometer.setBase(SystemClock.elapsedRealtime());
         chronometer.start();
 
@@ -400,10 +361,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             e.printStackTrace();
         }
         mRecorder = null;
-        //starting the chronometer
         chronometer.stop();
         chronometer.setBase(SystemClock.elapsedRealtime());
-        //showing the play button
         Toast.makeText(this, "Recording saved successfully.", Toast.LENGTH_SHORT).show();
     }
 
@@ -432,14 +391,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             e.printStackTrace();
         }
         mPlayer = null;
-        //showing the play button
         imageViewPlay.setImageResource(R.drawable.ic_media_play);
 
         chronometer.stop();
-        //chronometer.setBase(SystemClock.elapsedRealtime());
-        //lastProgress = 0;
-        //seekBar.setProgress(lastProgress);
-
 
     }
 
@@ -452,16 +406,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         } catch (IOException e) {
             Log.e("LOG_TAG", "prepare() failed");
         }
-        //making the imageview pause button
         imageViewPlay.setImageResource(R.drawable.ic_media_pause);
-
-
 
         seekBar.setProgress(lastProgress);
         mPlayer.seekTo(lastProgress);
         seekBar.setMax(mPlayer.getDuration());
         seekUpdation();
-
 
         int stoppedMilliseconds = 0;
 
@@ -533,40 +483,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     public void getPermissionToRecordAudio() {
-        // 1) Use the support library version ContextCompat.checkSelfPermission(...) to avoid
-        // checking the build version since Context.checkSelfPermission(...) is only available
-        // in Marshmallow
-        // 2) Always check for permission (even if permission has already been granted)
-        // since the user can revoke permissions at any time through Settings
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED
                 || ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
                 || ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-
-            // The permission is NOT already granted.
-            // Check if the user has been asked about this permission already and denied
-            // it. If so, we want to give more explanation about why the permission is needed.
-            // Fire off an async request to actually get the permission
-            // This will show the standard permission request dialog UI
-            requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO, Manifest.permission.WRITE_EXTERNAL_STORAGE},
+    requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO, Manifest.permission.WRITE_EXTERNAL_STORAGE},
                     RECORD_AUDIO_REQUEST_CODE);
 
         }
     }
-
-    // Callback with the request from calling requestPermissions(...)
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            @NonNull String permissions[],
                                            @NonNull int[] grantResults) {
-        // Make sure it's our original READ_CONTACTS request
         if (requestCode == RECORD_AUDIO_REQUEST_CODE) {
             if (grantResults.length == 3 &&
                     grantResults[0] == PackageManager.PERMISSION_GRANTED
                     && grantResults[1] == PackageManager.PERMISSION_GRANTED
                     && grantResults[2] == PackageManager.PERMISSION_GRANTED) {
-
-                //Toast.makeText(this, "Record Audio permission granted", Toast.LENGTH_SHORT).show();
 
             } else {
                 Toast.makeText(this, "You must give permissions to use this app. App is exiting.", Toast.LENGTH_SHORT).show();
