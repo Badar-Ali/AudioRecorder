@@ -49,7 +49,7 @@ public class translatedList extends AppCompatActivity {
         fromDataText = findViewById(R.id.fromData);
         toLangText = findViewById(R.id.toLang);
         fromLangText = findViewById(R.id.fromLang);
-        separator = findViewById(R.id.separator);
+        separator = findViewById(R.id.borderLine);
         nowords = findViewById(R.id.nowords);
 
 
