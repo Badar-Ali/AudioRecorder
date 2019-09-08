@@ -10,7 +10,6 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -67,7 +66,7 @@ public class translatedList extends AppCompatActivity {
         child = getIntent().getStringExtra("child");
         fName = getIntent().getStringExtra("fName");
 
-        Toast.makeText(this,"Child path:" + child,Toast.LENGTH_LONG).show();
+        //Toast.makeText(this,"Child path:" + child,Toast.LENGTH_LONG).show();
 
 
         toDataText = findViewById(R.id.toData);
@@ -109,7 +108,7 @@ public class translatedList extends AppCompatActivity {
         desertRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
-                Toast.makeText(context,"Child Deleted " + child,Toast.LENGTH_LONG).show();
+                //Toast.makeText(context,"File Deleted " + child,Toast.LENGTH_LONG).show();
                 DeleteFirebase();
                 DeleteRecording(fName);
             }
@@ -139,7 +138,7 @@ public class translatedList extends AppCompatActivity {
         final DatabaseReference translationRef = FirebaseDatabase.getInstance().getReference().child("Translations").child(filName);
         translationRef.setValue(null);
 
-        Toast.makeText(context,"Firebase Data Deleted",Toast.LENGTH_LONG).show();
+        //Toast.makeText(context,"Firebase Data Deleted",Toast.LENGTH_LONG).show();
 
 
 
@@ -164,7 +163,7 @@ public class translatedList extends AppCompatActivity {
 
                 if (fileName.equals(fName)) {
                     files[i].delete();
-                    Toast.makeText(context,"File Deleted from File Storage",Toast.LENGTH_LONG).show();
+          //          Toast.makeText(context,"File Deleted from File Storage",Toast.LENGTH_LONG).show();
                 }
             }
 
