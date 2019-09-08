@@ -104,7 +104,7 @@
                     android:id="@+id/imageViewRecord"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:src="@drawable/ic_launcher"
+                    android:src="@android:drawable/ic_btn_speak_now"
                     android:background="?android:attr/selectableItemBackground"
                     android:layout_marginEnd="10dp"
                     android:clickable="true"
