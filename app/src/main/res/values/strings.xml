@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">SoundRecorderExample</string>
+    <string name="app_name">Speech Translator</string>
 
     <string name="action_licenses">Licenses</string>
     <string name="action_settings">Settings</string>
