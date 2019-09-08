@@ -10,10 +10,11 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
@@ -33,6 +34,7 @@ public class translatedList extends AppCompatActivity {
     private TextView separator;
     private TextView nowords;
     StorageReference mStorageRef;
+    DatabaseReference mDatabaseRef;
     String child;
     String fName;
     Context context;
@@ -55,6 +57,7 @@ public class translatedList extends AppCompatActivity {
             }
         });
         mStorageRef = FirebaseStorage.getInstance().getReference();
+        mDatabaseRef = FirebaseDatabase.getInstance().getReference();
 
         toData = getIntent().getStringExtra("toData");
         fromData = getIntent().getStringExtra("fromData");
@@ -63,7 +66,7 @@ public class translatedList extends AppCompatActivity {
         child = getIntent().getStringExtra("child");
         fName = getIntent().getStringExtra("fName");
 
-        Toast.makeText(this,"Child path:" + child,Toast.LENGTH_LONG).show();
+        //Toast.makeText(this,"Child path:" + child,Toast.LENGTH_LONG).show();
 
 
         toDataText = findViewById(R.id.toData);
@@ -105,7 +108,8 @@ public class translatedList extends AppCompatActivity {
         desertRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
-                Toast.makeText(context,"Child Deleted " + child,Toast.LENGTH_LONG).show();
+                //Toast.makeText(context,"File Deleted " + child,Toast.LENGTH_LONG).show();
+                DeleteFirebase();
                 DeleteRecording(fName);
             }
         }).addOnFailureListener(new OnFailureListener() {
@@ -115,6 +119,31 @@ public class translatedList extends AppCompatActivity {
         });
 
     }
+
+    private String TrimFileName(String fileName) {
+        String ext = ".mp3";
+        return fileName.substring(0, fileName.length() - ext.length());
+    }
+
+    private void DeleteFirebase()
+    {
+        String audioName = fName.replace(".",",");
+
+        DatabaseReference audiosRef = mDatabaseRef.child("Audio").child(audioName);
+        audiosRef.setValue(null);
+
+        String filename = fName;
+        String filName = TrimFileName(filename);
+
+        final DatabaseReference translationRef = FirebaseDatabase.getInstance().getReference().child("Translations").child(filName);
+        translationRef.setValue(null);
+
+        //Toast.makeText(context,"Firebase Data Deleted",Toast.LENGTH_LONG).show();
+
+
+
+        }
+
     private void DeleteRecording(String fName) {
 
 
@@ -134,7 +163,7 @@ public class translatedList extends AppCompatActivity {
 
                 if (fileName.equals(fName)) {
                     files[i].delete();
-                    Toast.makeText(context,"File Deleted from File Storage",Toast.LENGTH_LONG).show();
+          //          Toast.makeText(context,"File Deleted from File Storage",Toast.LENGTH_LONG).show();
                 }
             }
 
