@@ -1,13 +1,18 @@
 package com.example.soundrecorderexample;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -18,20 +23,23 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
-import java.io.File;
+import org.w3c.dom.Text;
 
-public class translatedList extends AppCompatActivity {
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+public class TranslatedListActivity extends AppCompatActivity {
     private Toolbar toolbar;
     private String toData;
     private String fromData;
     private String srcLang;
     private String destLang;
 
-    private ListView toDataText;
-    private ListView fromDataText;
+    private ListView wordTranslationList;
     private TextView toLangText;
     private TextView fromLangText;
-    private TextView separator;
     private TextView nowords;
     StorageReference mStorageRef;
     DatabaseReference mDatabaseRef;
@@ -39,8 +47,14 @@ public class translatedList extends AppCompatActivity {
     String fName;
     Context context;
 
+	@Override
+	public void onBackPressed() {
+		Intent mainActivityIntent = new Intent(getApplicationContext(), MainActivity.class);
+		startActivity(mainActivityIntent);
+		finish();
+	}
 
-    @Override
+	@Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_translated_list);
@@ -52,8 +66,9 @@ public class translatedList extends AppCompatActivity {
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                onBackPressed();
-
+                Intent mainActivityIntent = new Intent(getApplicationContext(), MainActivity.class);
+                startActivity(mainActivityIntent);
+                finish();
             }
         });
         mStorageRef = FirebaseStorage.getInstance().getReference();
@@ -66,28 +81,18 @@ public class translatedList extends AppCompatActivity {
         child = getIntent().getStringExtra("child");
         fName = getIntent().getStringExtra("fName");
 
-        //Toast.makeText(this,"Child path:" + child,Toast.LENGTH_LONG).show();
-
-
-        toDataText = findViewById(R.id.toData);
-        fromDataText = findViewById(R.id.fromData);
+        wordTranslationList = findViewById(R.id.wordTranslations);
         toLangText = findViewById(R.id.toLang);
         fromLangText = findViewById(R.id.fromLang);
-        separator = findViewById(R.id.borderLine);
         nowords = findViewById(R.id.nowords);
-
 
         if(!toData.isEmpty() && !fromData.isEmpty()) {
 
             String[] toCommaSeparated = toData.split(",");
             String[] fromCommaSeparated = fromData.split(",");
 
-            ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(this, R.layout.list_item, R.id.text_in_list, toCommaSeparated);
-            toDataText.setAdapter(arrayAdapter);
-
-            ArrayAdapter<String> arrayAdapter2 = new ArrayAdapter<>(this, R.layout.list_item, R.id.text_in_list, fromCommaSeparated);
-            fromDataText.setAdapter(arrayAdapter2);
-
+            WordTranslationAdapter translationAdapter = new WordTranslationAdapter(Arrays.asList(fromCommaSeparated), Arrays.asList(toCommaSeparated));
+            wordTranslationList.setAdapter(translationAdapter);
             toLangText.setText(destLang);
             fromLangText.setText(srcLang);
 
@@ -95,12 +100,9 @@ public class translatedList extends AppCompatActivity {
 
         else {
             nowords.setVisibility(View.VISIBLE);
-            toDataText.setVisibility(View.GONE);
-            fromDataText.setVisibility(View.GONE);
             toLangText.setVisibility(View.GONE);
             fromLangText.setVisibility(View.GONE);
-            separator.setVisibility(View.GONE);
-
+            wordTranslationList.setVisibility(View.GONE);
         }
 
         StorageReference desertRef = mStorageRef.child(child);
@@ -171,5 +173,44 @@ public class translatedList extends AppCompatActivity {
 
     }
 
+    class WordTranslationAdapter extends BaseAdapter {
 
+    	List<String> srcWords;
+    	List<String> destWords;
+
+    	public WordTranslationAdapter(List<String> pSrcWords, List<String> pDestWords) {
+    		srcWords = pSrcWords;
+    		destWords = pDestWords;
+	    }
+
+	    @Override
+	    public int getCount() {
+		    return srcWords.size();
+	    }
+
+	    @Override
+	    public Object getItem(int pI) {
+		    return null;
+	    }
+
+	    @Override
+	    public long getItemId(int pI) {
+		    return 0;
+	    }
+
+	    @NonNull
+	    @Override
+	    public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+
+	    	if(convertView == null) {
+		    	convertView = LayoutInflater.from(getApplicationContext()).inflate(R.layout.list_item, null);
+		    }
+
+	    	TextView src_text = convertView.findViewById(R.id.src_words);
+	    	TextView dest_text = convertView.findViewById(R.id.dest_words);
+	    	src_text.setText(srcWords.get(position));
+	    	dest_text.setText(destWords.get(position));
+	    	return convertView;
+	    }
+    }
 }

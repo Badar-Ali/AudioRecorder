@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/colorWhite"
-    tools:context=".translatedList">
+    tools:context=".TranslatedListActivity">
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
@@ -70,45 +70,10 @@
 
     <ListView
         app:layout_constraintTop_toBottomOf="@+id/fromLang"
-        app:layout_constraintRight_toLeftOf="@+id/borderLine"
-        app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        android:id="@+id/fromData"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:padding="4dp"/>
-
-    <TextView
-        android:id="@+id/borderLine"
-        android:layout_width="3dp"
+        android:id="@+id/wordTranslations"
+        android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:background="#000000"
-        app:layout_constraintLeft_toRightOf="@+id/fromData"
-        app:layout_constraintRight_toLeftOf="@+id/toData"
-        app:layout_constraintTop_toTopOf="@+id/fromData"
-        app:layout_constraintBottom_toBottomOf="@id/fromData"/>
-
-    <ListView
-        app:layout_constraintTop_toTopOf="@+id/fromData"
-        app:layout_constraintLeft_toRightOf="@+id/borderLine"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:id="@+id/toData"
-        android:background="@android:color/transparent"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
         android:padding="4dp"/>
 
-    <!--
-              <TextView
-                  android:id="@+id/fromData"
-                  android:layout_width="100dp"
-                  android:layout_height="match_parent"
-                  android:hint="Audio Data"
-                  android:textAlignment="center"
-                  android:background="#ffffda"
-                  android:layout_margin="10dp"
-                  />
-
-      -->
 </android.support.constraint.ConstraintLayout>

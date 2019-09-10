@@ -14,9 +14,11 @@ import android.os.Handler;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
+import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.Html;
 import android.transition.TransitionManager;
 import android.util.Log;
 import android.view.View;
@@ -70,13 +72,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     int DataChangeCounter = 0;
     long timePassed = 0;
     String uploadfileName;
+    View parent;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        parent = findViewById(R.id.relative_layout);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             getPermissionToRecordAudio();
         }
@@ -127,7 +130,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void onClick(View v) {
                 progressDialog = new ProgressDialog(context);
                 progressDialog.setTitle("Please Wait!");
-                progressDialog.setMessage("Wait");
+                progressDialog.setMessage("Recognizing and Translating Audio");
                 progressDialog.setCancelable(false);
                 progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
                 progressDialog.show();
@@ -152,13 +155,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                         @Override
                                         public void onSuccess(Uri pUri) {
                                             downloadLink = String.valueOf("gs://speechtranslate-40b4d.appspot.com/" + pUri.getLastPathSegment());
-
                                             DatabaseReference audiosRef = mDatabaseRef.child("Translate");
-
                                             String srcLanguage = sourceSpinner.getSelectedItem().toString();
                                             String destLanguage = destSpinner.getSelectedItem().toString();
                                             String btnPressed = "" + counter;
-
                                             audiosRef.child("from").setValue(srcLanguage);
                                             audiosRef.child("to").setValue(destLanguage);
                                             audiosRef.child("uri").setValue(downloadLink);
@@ -181,9 +181,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                 } else {
 
-                    Toast.makeText(context, " Please Record Audio Before Translating and Select Desired Source and Destination Language", Toast.LENGTH_LONG).show();
+                    if(srcPos <= 0) {
+	                    Snackbar lSnackbar = Snackbar.make(parent, Html.fromHtml("<font color=\"#ffffff\">Please Select Source Language."),Snackbar.LENGTH_SHORT);
+	                    View sbView = lSnackbar.getView();
+                        sbView.setBackgroundColor(ContextCompat.getColor(getApplicationContext(), android.R.color.holo_red_light));
+                        lSnackbar.show();
+                    } else if(destPos <= 0) {
+                        Snackbar lSnackbar = Snackbar.make(parent, Html.fromHtml("<font color=\"#ffffff\">Please select language in which to translate."),Snackbar.LENGTH_SHORT);
+                        View sbView = lSnackbar.getView();
+                        sbView.setBackgroundColor(ContextCompat.getColor(getApplicationContext(), android.R.color.holo_red_light));
+                        lSnackbar.show();
+                    }
+                    else {
+                        Snackbar lSnackbar = Snackbar.make(parent, Html.fromHtml("<font color=\"#ffffff\">Please Record Audio First."),Snackbar.LENGTH_SHORT);
+                        View sbView = lSnackbar.getView();
+                        sbView.setBackgroundColor(ContextCompat.getColor(getApplicationContext(), android.R.color.holo_red_light));
+                        lSnackbar.show();
+                    }
                     progressDialog.dismiss();
-
                 }
             }
         });
@@ -203,11 +218,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 audiosRef.setValue(filName);
                 translateAudio();
 
-    } catch (Exception e) {
-                Toast.makeText(context, "Exception: " + e, Toast.LENGTH_LONG).show();
+            } catch (Exception e) {
+                        e.printStackTrace();
             }
         }
-
     }
 
     private String TrimFileName(String fileName) {
@@ -246,7 +260,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             String fromData = dataSnapshot.child(srcLanguage).getValue(String.class);
                             String toData = dataSnapshot.child(destLanguage).getValue(String.class);
 
-                                Intent i = new Intent(context, translatedList.class);
+                                Intent i = new Intent(context, TranslatedListActivity.class);
                                 i.putExtra("toData", toData);
                                 i.putExtra("fromData", fromData);
                                 i.putExtra("srcLanguage", srcLanguage);
@@ -256,7 +270,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 progressDialog.dismiss();
 
                                 context.startActivity(i);
-
+                                finish();
                         }
                     }
                 }
@@ -363,7 +377,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mRecorder = null;
         chronometer.stop();
         chronometer.setBase(SystemClock.elapsedRealtime());
-        Toast.makeText(this, "Recording saved successfully.", Toast.LENGTH_SHORT).show();
     }
 
     private void cancelRecording() {
@@ -541,8 +554,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         if (position > 0) {
-            Toast.makeText(this, "Selected Language: " + sourceSpinner.getItemAtPosition(position), Toast.LENGTH_LONG).show();
-
         }
     }
 
