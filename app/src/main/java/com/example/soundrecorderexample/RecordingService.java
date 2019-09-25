@@ -149,7 +149,7 @@ public class RecordingService extends Service {
         fileName = root.getAbsolutePath() + "/VoiceRecorderSimplifiedCoding/Audios/" + fName;
         Log.d("filename", fileName);
         mRecorder.setOutputFile(fileName);
-        mRecorder.setMaxDuration(5 * 1000 /*5 seconds*/);
+        mRecorder.setMaxDuration(30* 60 * 1000 /*5 seconds*/);
         mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
         mRecorder.setOnInfoListener(new MediaRecorder.OnInfoListener() {
             @Override
