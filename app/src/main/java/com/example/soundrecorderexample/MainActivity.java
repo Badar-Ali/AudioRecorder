@@ -1,16 +1,25 @@
 package com.example.soundrecorderexample;
 
 import android.Manifest;
+import android.app.ActivityManager;
+import android.app.IntentService;
 import android.app.ProgressDialog;
+import android.app.Service;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
+import android.os.IBinder;
+import android.os.PowerManager;
+import android.os.StatFs;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
@@ -50,7 +59,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private Toolbar toolbar;
     private Chronometer chronometer;
-    private ImageView imageViewRecord, imageViewPlay, imageViewStop, imageViewCancel;
+    private ImageView imageViewRecord, imageViewPlay, imageViewStop, imageViewCancel, imageViewPause;
     private SeekBar seekBar;
     private Spinner sourceSpinner, destSpinner;
     private LinearLayout linearLayoutRecorder, linearLayoutPlay;
@@ -74,6 +83,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     String uploadfileName;
     View parent;
 
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        if(intent.getAction().equals(RecordingService.actionStopRecording)) {
+            if(recordingService!=null) {
+                fName = RecordingService.fName;
+                fileName = RecordingService.fileName;
+                recordingService.handleActionStopRecording();
+            }
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,6 +108,27 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mDatabaseRef = FirebaseDatabase.getInstance().getReference();
         lastProgress = 0;
         initViews();
+
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (mPlayer != null && fromUser) {
+                    mPlayer.seekTo(progress);
+                    chronometer.setBase(SystemClock.elapsedRealtime() - mPlayer.getCurrentPosition());
+                    lastProgress = progress;
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
 
     }
 
@@ -104,6 +145,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         imageViewStop = (ImageView) findViewById(R.id.imageViewStop);
         imageViewPlay = (ImageView) findViewById(R.id.imageViewPlay);
         imageViewCancel = (ImageView) findViewById(R.id.imageViewCancel);
+//        imageViewPause = findViewById(R.id.imageViewPause);
         linearLayoutPlay = (LinearLayout) findViewById(R.id.linearLayoutPlay);
         linearLayoutPlay.setVisibility(View.GONE);
         seekBar = (SeekBar) findViewById(R.id.seekBar);
@@ -123,6 +165,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         imageViewRecord.setOnClickListener(this);
         imageViewStop.setOnClickListener(this);
         imageViewPlay.setOnClickListener(this);
+        imageViewCancel.setOnClickListener(this);
         imageViewCancel.setOnClickListener(this);
 
         trasnlateBtn.setOnClickListener(new View.OnClickListener() {
@@ -304,6 +347,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 stopPlaying();
             }
         }
+//        else if(view == imageViewPause) {
+//
+//        }
 
     }
 
@@ -325,7 +371,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         counter = 0;
     }
 
-
     private void prepareforRecording() {
         TransitionManager.beginDelayedTransition(linearLayoutRecorder);
         imageViewRecord.setVisibility(View.GONE);
@@ -336,27 +381,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void startRecording() {
-        mRecorder = new MediaRecorder();
-        mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-        mRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-        File root = android.os.Environment.getExternalStorageDirectory();
-        File file = new File(root.getAbsolutePath() + "/VoiceRecorderSimplifiedCoding/Audios");
-        if (!file.exists()) {
-            file.mkdirs();
-        }
-        fName = String.valueOf(System.currentTimeMillis() + ".mp3");
-        fileName = root.getAbsolutePath() + "/VoiceRecorderSimplifiedCoding/Audios/" + fName;
-        Log.d("filename", fileName);
-        mRecorder.setOutputFile(fileName);
-        mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
-
-        try {
-            mRecorder.prepare();
-            mRecorder.start();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
+//        File path = Environment.getDataDirectory();
+        startService(RecordingService.actionStartRecording);
         lastProgress = 0;
         seekBar.setProgress(0);
         stopPlaying();
@@ -365,15 +391,48 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
+    RecordingService recordingService;
+    boolean mBound = false;
+    public static String NotificatoinChannelID = "MediaRecorderChannel";
+    public static String NotificationID = "RecorderNotification";
+    ServiceConnection serviceConnection;
+
+    private void startService(String action) {
+        Intent service = new Intent(getApplicationContext(), RecordingService.class);
+        service.setAction(action);
+        startService(service);
+
+        serviceConnection = new ServiceConnection() {
+
+            @Override
+            public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+                recordingService = ((RecordingService.MyBinder) iBinder).getService();
+                mBound = true;
+            }
+
+            @Override
+            public void onServiceDisconnected(ComponentName componentName) {
+                recordingService = null;
+                mBound = false;
+            }
+        };
+
+        bindService(service, serviceConnection, BIND_AUTO_CREATE);
+
+    }
+
 
     private void stopRecording() {
 
-        try {
-            mRecorder.stop();
-            mRecorder.release();
-        } catch (Exception e) {
-            e.printStackTrace();
+        if(recordingService!=null) {
+            recordingService.handleActionStopRecording();
+            if(mBound) {
+                fileName = RecordingService.fileName;
+                fName = RecordingService.fName;
+                unbindService(serviceConnection);
+            }
         }
+
         mRecorder = null;
         chronometer.stop();
         chronometer.setBase(SystemClock.elapsedRealtime());
@@ -381,19 +440,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void cancelRecording() {
 
-        try {
-            mRecorder.reset();
-
-        } catch (Exception e) {
-            e.printStackTrace();
+        if(recordingService!=null) {
+            recordingService.handleActionCancelRecording();
+            if(mBound) {
+                unbindService(serviceConnection);
+            }
         }
-
-        DeleteRecording(fName);
         lastProgress = 0;
         seekBar.setProgress(0);
         chronometer.stop();
         chronometer.setBase(SystemClock.elapsedRealtime());
-
 
     }
 
@@ -404,10 +460,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             e.printStackTrace();
         }
         mPlayer = null;
+        isPlaying = false;
         imageViewPlay.setImageResource(R.drawable.ic_media_play);
-
         chronometer.stop();
-
     }
 
     private void startPlaying() {
@@ -415,6 +470,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         try {
             mPlayer.setDataSource(fileName);
             mPlayer.prepare();
+//            mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+//                @Override
+//                public void onCompletion(MediaPlayer mediaPlayer) {
+//                    stopPlaying();
+//                    lastProgress = 0;
+//                    seekBar.setProgress(0);
+//                }
+//            });
             mPlayer.start();
         } catch (IOException e) {
             Log.e("LOG_TAG", "prepare() failed");
@@ -451,30 +514,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 chronometer.setBase(SystemClock.elapsedRealtime());
                 lastProgress = 0;
                 seekBar.setProgress(lastProgress);
+                mPlayer.seekTo(0);
             }
         });
 
-
-        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if (mPlayer != null && fromUser) {
-                    mPlayer.seekTo(progress);
-                    chronometer.setBase(SystemClock.elapsedRealtime() - mPlayer.getCurrentPosition());
-                    lastProgress = progress;
-                }
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-
-            }
-        });
     }
 
     Runnable runnable = new Runnable() {
@@ -507,7 +550,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     public void onRequestPermissionsResult(int requestCode,
-                                           @NonNull String permissions[],
+                                           @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
         if (requestCode == RECORD_AUDIO_REQUEST_CODE) {
             if (grantResults.length == 3 &&
@@ -523,42 +566,40 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-
-    private void DeleteRecording(String fName) {
-
-
-        File root = android.os.Environment.getExternalStorageDirectory();
-        String path = root.getAbsolutePath() + "/VoiceRecorderSimplifiedCoding/Audios";
-        Log.d("Files", "Path: " + path);
-        File directory = new File(path);
-        File[] files = directory.listFiles();
-        Log.d("Files", "Size: " + files.length);
-        if (files != null) {
-
-            for (int i = 0; i < files.length; i++) {
-
-                Log.d("Files", "FileName:" + files[i].getName());
-                String fileName = files[i].getName();
-                String recordingUri = root.getAbsolutePath() + "/VoiceRecorderSimplifiedCoding/Audios/" + fileName;
-
-                if (fileName.equals(fName)) {
-                    files[i].delete();
-                }
-            }
-
-        }
-
-    }
-
-
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        if (position > 0) {
-        }
+
     }
 
     @Override
     public void onNothingSelected(AdapterView<?> parent) {
 
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        try {
+            imageViewPlay.setImageResource(R.drawable.ic_media_play);
+            if(isPlaying) {
+                chronometer.stop();
+            }
+            isPlaying = false;
+//            chronometer.stop();
+            mPlayer.stop();
+            mPlayer.release();
+            mPlayer = null;
+        }
+        catch (Exception ex){
+            ex.printStackTrace();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if(recordingService!=null){
+            recordingService.handleActionCancelRecording();
+        }
     }
 }
