@@ -35,6 +35,8 @@ import java.io.IOException;
 
 public class RecordingService extends Service {
 
+    public static final String ACTION_MAX_TIME_REACHED = "com.speechtranslation.max_time_reached";
+    public static final String ACTION_MAX_FILE_SIZE_REACHED = "com.speechtranslation.max_file_size_reached";
     private static MediaRecorder mRecorder;
     public static String fName;
     public static String fileName;
@@ -147,16 +149,20 @@ public class RecordingService extends Service {
         fileName = root.getAbsolutePath() + "/VoiceRecorderSimplifiedCoding/Audios/" + fName;
         Log.d("filename", fileName);
         mRecorder.setOutputFile(fileName);
-        mRecorder.setMaxDuration(30 * 60 * 1000);
+        mRecorder.setMaxDuration(5 * 1000 /*5 seconds*/);
         mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
         mRecorder.setOnInfoListener(new MediaRecorder.OnInfoListener() {
             @Override
             public void onInfo(MediaRecorder mediaRecorder, int what, int extra) {
                 if (what == MediaRecorder.MEDIA_RECORDER_INFO_MAX_DURATION_REACHED) {
-                    handleActionStopRecording();
+                    Intent intent = new Intent(ACTION_MAX_TIME_REACHED);
+                    sendBroadcast(intent);
+//                    handleActionStopRecording();
                     Toast.makeText(getApplicationContext(), "Max Duration Reached", Toast.LENGTH_SHORT).show();
                 } else if (what == MediaRecorder.MEDIA_RECORDER_INFO_MAX_FILESIZE_REACHED) {
-                    handleActionStopRecording();
+//                    handleActionStopRecording();
+                    Intent intent = new Intent(ACTION_MAX_FILE_SIZE_REACHED);
+                    sendBroadcast(intent);
                     Toast.makeText(getApplicationContext(), "Device Memory Full", Toast.LENGTH_SHORT).show();
 
                 }

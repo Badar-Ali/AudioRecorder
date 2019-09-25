@@ -1,25 +1,24 @@
 package com.example.soundrecorderexample;
 
 import android.Manifest;
-import android.app.ActivityManager;
-import android.app.IntentService;
 import android.app.ProgressDialog;
-import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
+import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.PowerManager;
-import android.os.StatFs;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
@@ -82,16 +81,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     long timePassed = 0;
     String uploadfileName;
     View parent;
+    BroadcastReceiver receiver;
+    PowerManager.WakeLock wakeLock;
 
-    @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-        if(intent.getAction().equals(RecordingService.actionStopRecording)) {
-            if(recordingService!=null) {
-                fName = RecordingService.fName;
-                fileName = RecordingService.fileName;
-                recordingService.handleActionStopRecording();
-            }
+    public void playSound(Context context) throws IllegalArgumentException,
+            SecurityException,
+            IllegalStateException,
+            IOException {
+
+        Uri soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        MediaPlayer mMediaPlayer = new MediaPlayer();
+        mMediaPlayer.setDataSource(context, soundUri);
+        final AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+
+        if (audioManager.getStreamVolume(AudioManager.STREAM_ALARM) != 0) {
+            mMediaPlayer.setAudioStreamType(AudioManager.STREAM_ALARM);
+            // Uncomment the following line if you aim to play it repeatedly
+            // mMediaPlayer.setLooping(true);
+            mMediaPlayer.prepare();
+            mMediaPlayer.start();
         }
     }
 
@@ -100,10 +108,38 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         parent = findViewById(R.id.relative_layout);
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             getPermissionToRecordAudio();
         }
         context = this;
+        receiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
+                PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP, ":tag");
+                wl.acquire(5*1000 /*5 sec*/);
+                try {
+                    playSound(getApplicationContext());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+//
+                if(intent.getAction() != null) {
+                    if (intent.getAction().equals(RecordingService.ACTION_MAX_TIME_REACHED)) {
+                        prepareforStop();
+                        stopRecording();
+                    } else if (intent.getAction().equals(RecordingService.ACTION_MAX_FILE_SIZE_REACHED)) {
+                        prepareforStop();
+                        stopRecording();
+                    }
+                }
+            }
+        };
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(RecordingService.ACTION_MAX_TIME_REACHED);
+        filter.addAction(RecordingService.ACTION_MAX_FILE_SIZE_REACHED);
+        registerReceiver(receiver, filter);
         mStorageRef = FirebaseStorage.getInstance().getReference();
         mDatabaseRef = FirebaseDatabase.getInstance().getReference();
         lastProgress = 0;
@@ -600,6 +636,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onDestroy();
         if(recordingService!=null){
             recordingService.handleActionCancelRecording();
+        }
+        if(receiver != null) {
+            unregisterReceiver(receiver);
         }
     }
 }
