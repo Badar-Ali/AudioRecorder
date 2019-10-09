@@ -1,35 +1,23 @@
 package com.example.soundrecorderexample;
 
 import android.app.ActivityManager;
-import android.app.IntentService;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.BroadcastReceiver;
-import android.content.Intent;
 import android.content.Context;
+import android.content.Intent;
 import android.media.MediaRecorder;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
-import android.os.IInterface;
-import android.os.Parcel;
-import android.os.RemoteException;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.NotificationCompat;
-import android.support.v4.content.ContextCompat;
-import android.text.Html;
 import android.util.Log;
-import android.view.View;
-import android.widget.RemoteViews;
 import android.widget.Toast;
 
 import java.io.File;
-import java.io.FileDescriptor;
 import java.io.IOException;
 
 
@@ -43,8 +31,8 @@ public class RecordingService extends Service {
     private static String CHANNEL_ID = "RECORDING_SERVICE_CHANNEL";
     private static int notification_id = 1;
     final static String actionStartRecording = "Start Recording";
-    final static String actionStopRecording = "Stop Recording";
-    final static String actionCancelRecording = "Cancel Recording";
+//    final static String actionStopRecording = "Stop Recording";
+//    final static String actionCancelRecording = "Cancel Recording";
     private final IBinder myBinder = new MyBinder();
     public static int REQUEST_CODE = 0;
 
@@ -64,12 +52,12 @@ public class RecordingService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
 //        return super.onStartCommand(intent, flags, startId);
         createNotificationChannel();
-        RemoteViews notificationLayout = new RemoteViews(getPackageName(), R.layout.notification_recording);
+//        RemoteViews notificationLayout = new RemoteViews(getPackageName(), R.layout.notification_recording);
         Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, REQUEST_CODE, notificationIntent, 0);
 
         Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(R.drawable.recordbtn)
+                .setSmallIcon(R.drawable.ic_mic_white_36dp)
                 .setContentTitle("Recording Audio")
                 .setSubText("Recording Audio in Background")
 //                .setStyle(new NotificationCompat.DecoratedCustomViewStyle())
@@ -215,7 +203,7 @@ public class RecordingService extends Service {
 
                 Log.d("Files", "FileName:" + files[i].getName());
                 String fileName = files[i].getName();
-                String recordingUri = root.getAbsolutePath() + "/VoiceRecorderSimplifiedCoding/Audios/" + fileName;
+//                String recordingUri = root.getAbsolutePath() + "/VoiceRecorderSimplifiedCoding/Audios/" + fileName;
 
                 if (fileName.equals(fName)) {
                     files[i].delete();
