@@ -18,17 +18,12 @@
         android:theme="@style/Theme.AppCompat.Light.NoActionBar"
         tools:ignore="GoogleAppIndexingWarning">
 
-        <service
-            android:name=".RecordingService"
-            android:enabled="true"
-            android:exported="false" />
-
-        <activity
-            android:name=".TranslatedListActivity"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".MainActivity"
+        <activity android:name=".LearningActivity"
             android:screenOrientation="portrait">
+
+        </activity>
+
+        <activity android:name=".HomeScreenActivity" android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -36,6 +31,20 @@
             </intent-filter>
         </activity>
 
+        <service
+            android:name=".RecordingService"
+            android:enabled="true"
+            android:exported="false" />
+
+        <activity
+            android:name=".MainActivity"
+            android:screenOrientation="portrait">
+        </activity>
+        <activity android:name=".RecentWordsActivity"
+            android:screenOrientation="portrait" />
+        <activity android:name=".CompleteWordListActivity"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+            android:screenOrientation="portrait"/>
     </application>
 
 </manifest>

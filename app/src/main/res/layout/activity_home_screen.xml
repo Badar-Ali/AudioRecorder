@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:weightSum="1"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical">
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.1"
+        />
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.25"
+        android:src="@drawable/ic_translating"/>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.1"
+        />
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.1"
+        >
+        <TextView
+        android:id="@+id/recordNewWords"
+            android:layout_gravity="center_vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="10dp"
+            android:textColor="@color/colorBlack"
+            android:textSize="@dimen/text_size_home"
+            android:text="Record New Words"
+            android:textStyle="bold"
+            android:paddingEnd="10dp"
+            android:drawableEnd="@drawable/ic_navigate_next_black_24dp"
+            />
+    </androidx.cardview.widget.CardView>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.001"
+        android:background="@color/colorBlack"/>
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.1">
+        <TextView
+            android:id="@+id/word_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingEnd="10dp"
+            android:layout_gravity="center_vertical"
+            android:textColor="@color/colorBlack"
+            android:paddingStart="10dp"
+            android:textSize="@dimen/text_size_home"
+            android:text="Word List"
+            android:textStyle="bold"
+            android:drawableEnd="@drawable/ic_navigate_next_black_24dp"
+            />
+    </androidx.cardview.widget.CardView>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0.1dp"
+        android:layout_weight="0.001"
+        android:background="@color/colorBlack"/>
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.1"
+
+        >
+        <TextView
+            android:id="@+id/learn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:textColor="@color/colorBlack"
+            android:paddingStart="10dp"
+            android:text="Learn"
+            android:paddingEnd="10dp"
+            android:textStyle="bold"
+            android:textSize="@dimen/text_size_home"
+            android:drawableEnd="@drawable/ic_navigate_next_black_24dp"
+            />
+    </androidx.cardview.widget.CardView>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.001"
+        android:background="@color/colorBlack"/>
+<!--    <androidx.cardview.widget.CardView-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="0dp"-->
+<!--        android:layout_weight="0.1"-->
+
+<!--        >-->
+<!--        <TextView-->
+<!--            android:id="@+id/recent"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_gravity="center_vertical"-->
+<!--            android:textColor="@color/colorBlack"-->
+<!--            android:paddingStart="10dp"-->
+<!--            android:text="Recent Translations"-->
+<!--            android:paddingEnd="10dp"-->
+<!--            android:textStyle="bold"-->
+<!--            android:textSize="@dimen/text_size_home"-->
+<!--            android:drawableEnd="@drawable/ic_navigate_next_black_24dp"-->
+<!--            />-->
+<!--    </androidx.cardview.widget.CardView>-->
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.001"
+        android:background="@color/colorBlack"/>
+
+
+</LinearLayout>

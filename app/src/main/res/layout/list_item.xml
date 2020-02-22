@@ -1,42 +1,266 @@
-<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout android:orientation="horizontal"
-    android:layout_width="match_parent"
+<!--<?xml version="1.0" encoding="utf-8"?>-->
+<!--<LinearLayout android:orientation="horizontal"-->
+<!--    android:layout_width="match_parent"-->
+<!--    android:layout_height="wrap_content"-->
+<!--    android:weightSum="1"-->
+<!--    xmlns:android="http://schemas.android.com/apk/res/android">-->
+
+<!--    <TextView-->
+<!--        android:id="@+id/src_words"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_width="0dp"-->
+<!--        android:paddingTop="10dp"-->
+<!--        android:paddingBottom="10dp"-->
+<!--        android:layout_weight="0.49"-->
+<!--        android:gravity="center"-->
+<!--        android:textSize="18sp"-->
+<!--        android:textColor="@color/colorBlack"-->
+<!--        android:text="Dummy Text"-->
+<!--        android:textIsSelectable="true"-->
+<!--        android:background="@android:color/transparent"/>-->
+
+<!--    <View-->
+<!--        android:layout_width="0dp"-->
+<!--        android:layout_height="match_parent"-->
+<!--        android:layout_weight="0.005"-->
+<!--        android:background="@color/colorBlack" />-->
+
+<!--    <TextView-->
+<!--        android:id="@+id/dest_words"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_width="0dp"-->
+<!--        android:paddingTop="10dp"-->
+<!--        android:paddingBottom="10dp"-->
+<!--        android:layout_weight="0.49"-->
+<!--        android:gravity="center"-->
+<!--        android:textSize="18sp"-->
+<!--        android:textColor="@color/colorBlack"-->
+<!--        android:text="Dummy Text"-->
+<!--        android:textIsSelectable="true"-->
+<!--        android:background="@android:color/transparent"/>-->
+
+<!--</LinearLayout>-->
+
+<!--<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
+<!--    android:layout_width="match_parent"-->
+<!--    android:layout_height="wrap_content"-->
+<!--    android:paddingBottom="40dp">-->
+
+<androidx.cardview.widget.CardView android:layout_width="match_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/card"
     android:layout_height="wrap_content"
-    android:weightSum="1"
-    xmlns:android="http://schemas.android.com/apk/res/android">
-
-    <TextView
-        android:id="@+id/src_words"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:cardElevation="4dp"
+    android:animateLayoutChanges="true"
+    android:layout_marginBottom="16dp">
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_gravity="center"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_width="0dp"
-        android:paddingTop="10dp"
-        android:paddingBottom="10dp"
-        android:layout_weight="0.49"
-        android:gravity="center"
-        android:textSize="18sp"
-        android:textColor="@color/colorBlack"
-        android:text="Dummy Text"
-        android:textIsSelectable="true"
-        android:background="@android:color/transparent"/>
+        android:padding="12dp"
+        >
 
-    <View
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="0.005"
-        android:background="@color/colorBlack" />
+        <LinearLayout
+            android:padding="4sp"
+            android:id="@+id/wordContainer"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:gravity="center"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="@id/translationContainer"
+            app:layout_constraintBottom_toBottomOf="@id/translationContainer"
+            app:layout_constraintRight_toLeftOf="@id/borderLine">
 
-    <TextView
-        android:id="@+id/dest_words"
-        android:layout_height="wrap_content"
-        android:layout_width="0dp"
-        android:paddingTop="10dp"
-        android:paddingBottom="10dp"
-        android:layout_weight="0.49"
-        android:gravity="center"
-        android:textSize="18sp"
-        android:textColor="@color/colorBlack"
-        android:text="Dummy Text"
-        android:textIsSelectable="true"
-        android:background="@android:color/transparent"/>
+            <FrameLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:id="@+id/word"
+                    android:layout_gravity="center"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/colorBlack"
+                    android:text="Word"
+                    android:textSize="18sp"/>
+                <EditText
+                    android:layout_gravity="center"
+                    android:drawableEnd="@drawable/ic_edit_black_24dp"
+                    android:visibility="gone"
+                    android:id="@+id/wordEdit"
+                    android:background="@android:color/transparent"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/colorBlack"
+                    android:text="Word"
+                    android:textSize="18sp"/>
+            </FrameLayout>
 
-</LinearLayout>
+        </LinearLayout>
+        <View
+            android:layout_marginTop="4dp"
+            android:id="@+id/borderLine"
+            android:background="@color/colorBlack"
+            android:layout_width="1dp"
+            android:layout_height="0dp"
+            app:layout_constraintTop_toTopOf="@id/translationContainer"
+            app:layout_constraintBottom_toBottomOf="@id/translationContainer"
+            app:layout_constraintLeft_toRightOf="@id/wordContainer"
+            app:layout_constraintRight_toLeftOf="@id/translationContainer"
+            />
+        <LinearLayout
+            android:padding="4dp"
+            android:id="@+id/translationContainer"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            app:layout_constraintLeft_toRightOf="@id/borderLine"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            >
+
+            <FrameLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:layout_gravity="center"
+                    android:id="@+id/translation"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/colorBlack"
+                    android:text="Word"
+                    android:textSize="18sp"/>
+                <EditText
+                    android:layout_gravity="center"
+                    android:drawableEnd="@drawable/ic_edit_black_24dp"
+                    android:visibility="gone"
+                    android:id="@+id/translationEdit"
+                    android:background="@android:color/transparent"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/colorBlack"
+                    android:text="Word"
+                    android:textSize="18sp"/>
+            </FrameLayout>
+
+
+            <FrameLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:layout_gravity="center"
+                    android:id="@+id/transliteration"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="transliteration"
+                    android:textSize="12sp"/>
+                <EditText
+                    android:layout_gravity="center"
+                    android:drawableEnd="@drawable/ic_edit_black_24dp"
+                    android:visibility="gone"
+                    android:id="@+id/transliterationEdit"
+                    android:background="@android:color/transparent"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="transliteration"
+                    android:textSize="12sp"/>
+            </FrameLayout>
+
+
+        </LinearLayout>
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/deleteBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textSize="16sp"
+            app:layout_constraintTop_toTopOf="@id/editBtn"
+            app:layout_constraintBottom_toBottomOf="@id/editBtn"
+            app:layout_constraintLeft_toLeftOf="@id/translationContainer"
+            app:layout_constraintRight_toRightOf="@id/translationContainer"
+            android:text="Remove"
+            android:textStyle="bold"
+            android:drawableStart="@drawable/ic_delete_black_24dp"
+            />
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/editBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textSize="16sp"
+            app:layout_constraintTop_toBottomOf="@id/wordContainer"
+            app:layout_constraintLeft_toLeftOf="@id/wordContainer"
+            app:layout_constraintRight_toRightOf="@id/wordContainer"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp"
+            android:drawablePadding="4dp"
+            android:text="Edit"
+            android:textStyle="bold"
+            android:drawableStart="@drawable/ic_edit_black_24dp"
+            />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.cardview.widget.CardView>
+    <!--<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"-->
+    <!--    android:id="@+id/card"-->
+    <!--    android:layout_width="match_parent"-->
+    <!--    android:layout_height="wrap_content"-->
+    <!--    android:layout_marginLeft="20dp"-->
+    <!--    android:layout_marginTop="20dp"-->
+    <!--    android:elevation="10dp"-->
+    <!--    android:layout_marginRight="20dp"-->
+    <!--    android:layout_marginBottom="20dp">-->
+
+    <!--    <FrameLayout-->
+    <!--        android:layout_width="match_parent"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:id="@+id/cardBackground"-->
+    <!--        android:padding="10sp">-->
+
+    <!--        <TextView-->
+    <!--            android:id="@+id/lang"-->
+    <!--            android:layout_width="wrap_content"-->
+    <!--            android:layout_height="wrap_content"-->
+    <!--            android:text=""-->
+    <!--            android:textColor="#101010"-->
+    <!--            android:textSize="16sp"-->
+    <!--            android:textStyle="italic" />-->
+
+    <!--        <TextView-->
+    <!--            android:id="@+id/text"-->
+    <!--            android:layout_width="wrap_content"-->
+    <!--            android:layout_height="wrap_content"-->
+    <!--            android:layout_gravity="center"-->
+    <!--            android:text=""-->
+    <!--            android:textColor="@color/colorBlack"-->
+    <!--            android:textSize="26sp"-->
+    <!--            android:textStyle="bold" />-->
+
+    <!--        <TextView-->
+    <!--            android:id="@+id/transliteration"-->
+    <!--            android:layout_width="wrap_content"-->
+    <!--            android:layout_height="wrap_content"-->
+    <!--            android:layout_gravity="bottom|center"-->
+    <!--            android:layout_marginTop="160dp"-->
+    <!--            android:layout_marginBottom="10dp"-->
+    <!--            android:text=""-->
+    <!--            android:textColor="#111111"-->
+    <!--            android:textStyle="italic"-->
+    <!--            android:textSize="18sp" />-->
+
+    <!--        <androidx.appcompat.widget.AppCompatTextView-->
+    <!--            android:id="@+id/deleteBtn"-->
+    <!--            android:layout_width="wrap_content"-->
+    <!--            android:layout_height="wrap_content"-->
+    <!--            android:layout_gravity="right|top"-->
+    <!--            android:drawableTop="@android:drawable/ic_menu_close_clear_cancel"-->
+    <!--            android:text="Delete"-->
+    <!--            android:textColor="@color/colorBlack"-->
+    <!--            />-->
+
+    <!--    </FrameLayout>-->
+
+    <!--</androidx.cardview.widget.CardView>&lt;!&ndash;</FrameLayout>&ndash;&gt;-->

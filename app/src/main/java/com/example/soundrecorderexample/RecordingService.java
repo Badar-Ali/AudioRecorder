@@ -12,15 +12,17 @@ import android.media.MediaRecorder;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
-import android.support.annotation.Nullable;
-import android.support.v4.app.NotificationCompat;
+import androidx.annotation.Nullable;
+import androidx.core.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Objects;
 
 
+@SuppressWarnings("FieldCanBeLocal")
 public class RecordingService extends Service {
 
     public static final String ACTION_MAX_TIME_REACHED = "com.speechtranslation.max_time_reached";
@@ -29,9 +31,9 @@ public class RecordingService extends Service {
     public static String fName;
     public static String fileName;
     private static String CHANNEL_ID = "RECORDING_SERVICE_CHANNEL";
-    private static int notification_id = 1;
+    private static int NOTIFICATION_ID = 1;
     final static String actionStartRecording = "Start Recording";
-//    final static String actionStopRecording = "Stop Recording";
+    //    final static String actionStopRecording = "Stop Recording";
 //    final static String actionCancelRecording = "Cancel Recording";
     private final IBinder myBinder = new MyBinder();
     public static int REQUEST_CODE = 0;
@@ -40,7 +42,7 @@ public class RecordingService extends Service {
         super();
     }
 
-
+    @SuppressWarnings("WeakerAccess")
     public class MyBinder extends Binder {
         RecordingService getService() {
             // Return this instance of LocalService so clients can call public methods
@@ -60,13 +62,11 @@ public class RecordingService extends Service {
                 .setSmallIcon(R.drawable.ic_mic_white_36dp)
                 .setContentTitle("Recording Audio")
                 .setSubText("Recording Audio in Background")
-//                .setStyle(new NotificationCompat.DecoratedCustomViewStyle())
-//                .setCustomContentView(notificationLayout)
                 .setContentIntent(pendingIntent)
                 .setDefaults(NotificationCompat.DEFAULT_ALL)
                 .build();
 
-        startForeground(notification_id, notification);
+        startForeground(NOTIFICATION_ID, notification);
 
         return START_NOT_STICKY;
     }
@@ -79,7 +79,7 @@ public class RecordingService extends Service {
         return myBinder;
     }
 
-    private void createNotificationChannel(){
+    private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel serviceChannel = new NotificationChannel(
                     CHANNEL_ID,
@@ -88,7 +88,9 @@ public class RecordingService extends Service {
             );
 
             NotificationManager manager = getSystemService(NotificationManager.class);
-            manager.createNotificationChannel(serviceChannel);
+            if (manager != null) {
+                manager.createNotificationChannel(serviceChannel);
+            }
         }
     }
 
@@ -114,7 +116,7 @@ public class RecordingService extends Service {
     public void handleActionStartRecording() {
         ActivityManager.MemoryInfo mi = new ActivityManager.MemoryInfo();
         ActivityManager activityManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-        activityManager.getMemoryInfo(mi);
+        Objects.requireNonNull(activityManager).getMemoryInfo(mi);
         long availableBytes = mi.availMem;
         long reserveMBs = 20 * 1024 * 1024;
 
@@ -128,16 +130,20 @@ public class RecordingService extends Service {
         mRecorder.setMaxFileSize(availableBytes - reserveMBs);
         mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
         mRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-        File root = android.os.Environment.getExternalStorageDirectory();
-        File file = new File(root.getAbsolutePath() + "/VoiceRecorderSimplifiedCoding/Audios");
+
+        File root = getExternalFilesDir(null);
+        File file = new File(Objects.requireNonNull(root).getAbsolutePath() + "/VoiceRecorderSimplifiedCoding/Audios");
+
         if (!file.exists()) {
+            //noinspection ResultOfMethodCallIgnored
             file.mkdirs();
         }
+
         fName = System.currentTimeMillis() + ".mp3";
         fileName = root.getAbsolutePath() + "/VoiceRecorderSimplifiedCoding/Audios/" + fName;
         Log.d("filename", fileName);
         mRecorder.setOutputFile(fileName);
-        mRecorder.setMaxDuration(30* 60 * 1000 /*5 seconds*/);
+        mRecorder.setMaxDuration(30 * 60 * 1000 /*5 seconds*/);
         mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
         mRecorder.setOnInfoListener(new MediaRecorder.OnInfoListener() {
             @Override
@@ -191,22 +197,24 @@ public class RecordingService extends Service {
 
     private void DeleteRecording(String fName) {
 
-        File root = android.os.Environment.getExternalStorageDirectory();
+        File root = getExternalFilesDir(null);
+        assert root != null;
         String path = root.getAbsolutePath() + "/VoiceRecorderSimplifiedCoding/Audios";
         Log.d("Files", "Path: " + path);
         File directory = new File(path);
         File[] files = directory.listFiles();
-        Log.d("Files", "Size: " + files.length);
+//        Log.d("Files", "Size: " + files.length);
         if (files != null) {
 
-            for (int i = 0; i < files.length; i++) {
+            for (File file : files) {
 
-                Log.d("Files", "FileName:" + files[i].getName());
-                String fileName = files[i].getName();
+                Log.d("Files", "FileName:" + file.getName());
+                String fileName = file.getName();
 //                String recordingUri = root.getAbsolutePath() + "/VoiceRecorderSimplifiedCoding/Audios/" + fileName;
 
                 if (fileName.equals(fName)) {
-                    files[i].delete();
+                    //noinspection ResultOfMethodCallIgnored
+                    file.delete();
                 }
             }
 

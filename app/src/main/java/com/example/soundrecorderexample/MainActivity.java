@@ -5,13 +5,13 @@ import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.media.MediaRecorder;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
@@ -20,12 +20,6 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.SystemClock;
-import android.support.annotation.NonNull;
-import android.support.annotation.RequiresApi;
-import android.support.design.widget.Snackbar;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.transition.TransitionManager;
 import android.util.Log;
@@ -40,8 +34,17 @@ import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
+
+import com.example.soundrecorderexample.database.MySQLiteDatabase;
+import com.example.soundrecorderexample.models.VocabCard;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -49,20 +52,24 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.StorageTask;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, AdapterView.OnItemSelectedListener {
 
-    private Toolbar toolbar;
     private Chronometer chronometer;
-    private ImageView imageViewRecord, imageViewPlay, imageViewStop, imageViewCancel, imageViewPause;
+    private ImageView imageViewRecord, imageViewPlay, imageViewStop, imageViewCancel;
     private SeekBar seekBar;
     private Spinner sourceSpinner, destSpinner;
     private LinearLayout linearLayoutRecorder, linearLayoutPlay;
-    private MediaRecorder mRecorder;
     private MediaPlayer mPlayer;
     private String fileName = null;
     private String fName = null;
@@ -70,7 +77,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Handler mHandler = new Handler();
     private int RECORD_AUDIO_REQUEST_CODE = 123;
     private boolean isPlaying = false;
-    private Button trasnlateBtn;
     private Context context;
     private StorageReference mStorageRef;
     private int counter = 0;
@@ -78,11 +84,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     String downloadLink;
     DatabaseReference mDatabaseRef;
     int DataChangeCounter = 0;
-    long timePassed = 0;
-    String uploadfileName;
+    String uploadFileName;
     View parent;
     BroadcastReceiver receiver;
-    PowerManager.WakeLock wakeLock;
 
     public void playSound(Context context) throws IllegalArgumentException,
             SecurityException,
@@ -94,7 +98,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mMediaPlayer.setDataSource(context, soundUri);
         final AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
 
-        if (audioManager.getStreamVolume(AudioManager.STREAM_ALARM) != 0) {
+        if (audioManager != null && audioManager.getStreamVolume(AudioManager.STREAM_ALARM) != 0) {
             mMediaPlayer.setAudioStreamType(AudioManager.STREAM_ALARM);
             // Uncomment the following line if you aim to play it repeatedly
             // mMediaPlayer.setLooping(true);
@@ -104,20 +108,39 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         parent = findViewById(R.id.relative_layout);
 
+
+
+
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             getPermissionToRecordAudio();
         }
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        toolbar.setTitle("Speech Translation");
+        toolbar.setNavigationIcon(R.drawable.ic_arrow_back_black_24dp);
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onBackPressed();
+            }
+        });
         context = this;
         receiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
-                PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP, ":tag");
+                assert pm != null;
+                PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP, ":tag");
                 wl.acquire(5*1000 /*5 sec*/);
                 try {
                     playSound(getApplicationContext());
@@ -168,30 +191,32 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
+    private boolean canceled = true;
+    private StorageTask<UploadTask.TaskSnapshot> task;
+
     private void initViews() {
 
-         toolbar = (Toolbar) findViewById(R.id.toolbar);
-         toolbar.setTitle("Speech Translation");
-         setSupportActionBar(toolbar);
+//        Toolbar toolbar = findViewById(R.id.toolbar);
+//        toolbar.setTitle("Speech Translation");
+//        setSupportActionBar(toolbar);
 
-        linearLayoutRecorder = (LinearLayout) findViewById(R.id.linearLayoutRecorder);
-        chronometer = (Chronometer) findViewById(R.id.chronometerTimer);
+        linearLayoutRecorder = findViewById(R.id.linearLayoutRecorder);
+        chronometer = findViewById(R.id.chronometerTimer);
         chronometer.setBase(SystemClock.elapsedRealtime());
-        imageViewRecord = (ImageView) findViewById(R.id.imageViewRecord);
-        imageViewStop = (ImageView) findViewById(R.id.imageViewStop);
-        imageViewPlay = (ImageView) findViewById(R.id.imageViewPlay);
-        imageViewCancel = (ImageView) findViewById(R.id.imageViewCancel);
-//        imageViewPause = findViewById(R.id.imageViewPause);
-        linearLayoutPlay = (LinearLayout) findViewById(R.id.linearLayoutPlay);
+        imageViewRecord = findViewById(R.id.imageViewRecord);
+        imageViewStop = findViewById(R.id.imageViewStop);
+        imageViewPlay = findViewById(R.id.imageViewPlay);
+        imageViewCancel = findViewById(R.id.imageViewCancel);
+        linearLayoutPlay = findViewById(R.id.linearLayoutPlay);
         linearLayoutPlay.setVisibility(View.GONE);
-        seekBar = (SeekBar) findViewById(R.id.seekBar);
+        seekBar = findViewById(R.id.seekBar);
         sourceSpinner = findViewById(R.id.sourceSpinner);
         destSpinner = findViewById(R.id.destSpinner);
-        trasnlateBtn = findViewById(R.id.translateBtn);
+        Button trasnlateBtn = findViewById(R.id.translateBtn);
 
 
-        String[] srclanguages = new String[]{"Select Source Language", "English", "German", "Russian", "Italian", "Spanish","Japanese","Swedish"};
-        String[] destlanguages = new String[]{"Select Destination Language", "English", "German", "Russian", "Italian", "Spanish","Japanese","Swedish"};
+        String[] srclanguages = new String[]{"Select Source Language", "English", "Chinese", "German", "Russian", "Italian", "Spanish","Japanese","Swedish"};
+        String[] destlanguages = new String[]{"Select Destination Language", "English", "Chinese", "German", "Russian", "Italian", "Spanish","Japanese","Swedish"};
 
         ArrayAdapter<String> srcAdapter = new ArrayAdapter<>(this, R.layout.support_simple_spinner_dropdown_item, srclanguages);
         final ArrayAdapter<String> destAdapter = new ArrayAdapter<>(this, R.layout.support_simple_spinner_dropdown_item, destlanguages);
@@ -207,10 +232,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         trasnlateBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                canceled = false;
                 progressDialog = new ProgressDialog(context);
                 progressDialog.setTitle("Please Wait!");
                 progressDialog.setMessage("Recognizing and Translating Audio");
-                progressDialog.setCancelable(false);
+                progressDialog.setCancelable(true);
+                progressDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                    @Override
+                    public void onCancel(DialogInterface dialog) {
+                        canceled = true;
+                        progressDialog.dismiss();
+                    }
+                });
                 progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
                 progressDialog.show();
 
@@ -218,32 +252,31 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 int destPos = destSpinner.getSelectedItemPosition();
 
                 if (fileName != null && counter == 1 && srcPos > 0 && destPos > 0) {
-                    uploadfileName = "Audios/" + fName;
+                    uploadFileName = "Audios/" + fName;
 
                     final Uri file = Uri.fromFile(new File(fileName));
+                    final StorageReference audioRef = mStorageRef.child(uploadFileName);
 
-                    final StorageReference audioRef = mStorageRef.child(uploadfileName);
-
-
-                    audioRef.putFile(file)
+                    task = audioRef.putFile(file)
                             .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                                 @Override
                                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-
                                     taskSnapshot.getStorage().getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                                         @Override
                                         public void onSuccess(Uri pUri) {
-                                            downloadLink = String.valueOf("gs://speechtranslate-40b4d.appspot.com/" + pUri.getLastPathSegment());
+                                            downloadLink = "gs://speechtranslate-40b4d.appspot.com/" + pUri.getLastPathSegment();
                                             DatabaseReference audiosRef = mDatabaseRef.child("Translate");
                                             String srcLanguage = sourceSpinner.getSelectedItem().toString();
                                             String destLanguage = destSpinner.getSelectedItem().toString();
-                                            String btnPressed = "" + counter;
-                                            audiosRef.child("from").setValue(srcLanguage);
-                                            audiosRef.child("to").setValue(destLanguage);
-                                            audiosRef.child("uri").setValue(downloadLink);
-                                            audiosRef.child("pressed").setValue(1);
-                                            audiosRef.child("fname").setValue(fName);
 
+                                            HashMap<String, Object> map = new HashMap<>();
+                                            map.put("from", srcLanguage);
+                                            map.put("to", destLanguage);
+                                            map.put("uri", downloadLink);
+                                            map.put("pressed", 1);
+                                            map.put("fname", fName);
+
+                                            audiosRef.setValue(map);
 
                                             writeFileToDatabase(fName);
                                             counter = 0;
@@ -261,8 +294,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 } else {
 
                     if(srcPos <= 0) {
-	                    Snackbar lSnackbar = Snackbar.make(parent, Html.fromHtml("<font color=\"#ffffff\">Please Select Source Language."),Snackbar.LENGTH_SHORT);
-	                    View sbView = lSnackbar.getView();
+                        Snackbar lSnackbar = Snackbar.make(parent, Html.fromHtml("<font color=\"#ffffff\">Please Select Source Language."),Snackbar.LENGTH_SHORT);
+                        View sbView = lSnackbar.getView();
                         sbView.setBackgroundColor(ContextCompat.getColor(getApplicationContext(), android.R.color.holo_red_light));
                         lSnackbar.show();
                     } else if(destPos <= 0) {
@@ -298,7 +331,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 translateAudio();
 
             } catch (Exception e) {
-                        e.printStackTrace();
+                e.printStackTrace();
             }
         }
     }
@@ -322,34 +355,67 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             final DatabaseReference translationRef = FirebaseDatabase.getInstance().getReference().child("Translations").child(filName);
             translationRef.child("waiting").setValue(1);
+            translationRef.child("srcLang").setValue(srcLanguage);
+            translationRef.child("destLang").setValue(destLanguage);
 
             translationRef.addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     DataChangeCounter++;
-                    Log.i("AAA", "" + DataChangeCounter);
                     if (DataChangeCounter == 2 || DataChangeCounter == 3) {
                         DataChangeCounter = 0;
 
                         if (dataSnapshot.hasChildren()) {
-
                             translationRef.removeEventListener(this);
                             dataSnapshot.child("waiting").getRef().setValue(0);
 
-                            String fromData = dataSnapshot.child(srcLanguage).getValue(String.class);
-                            String toData = dataSnapshot.child(destLanguage).getValue(String.class);
+//                            String fromData = dataSnapshot.child(srcLanguage.toLowerCase()).getValue(String.class);
+//                            String toData = dataSnapshot.child(destLanguage.toLowerCase()).getValue(String.class);
+//                            String transliteration = dataSnapshot.child(getString(R.string.roman_letters_firebaseKey)).getValue(String.class);
 
-                                Intent i = new Intent(context, TranslatedListActivity.class);
-                                i.putExtra("toData", toData);
-                                i.putExtra("fromData", fromData);
-                                i.putExtra("srcLanguage", srcLanguage);
-                                i.putExtra("destLanguage", destLanguage);
-                                i.putExtra("child",uploadfileName);
-                                i.putExtra("fName",fName);
-                                progressDialog.dismiss();
+                            Iterable<DataSnapshot> words = dataSnapshot.child("words").getChildren();
 
-                                context.startActivity(i);
-                                finish();
+                            String srcLang = dataSnapshot.child("srcLang").getValue(String.class);
+                            String destLang = dataSnapshot.child("destLang").getValue(String.class);
+                            List<VocabCard> cardList = new ArrayList<>();
+
+                            for(DataSnapshot word : words) {
+                                String id = "" + new Date().getTime() + word.getKey();
+                                int position = Integer.parseInt(Objects.requireNonNull(word.getKey()));
+                                int rank = ((Long) Objects.requireNonNull(word.child("rank").getValue())).intValue();
+                                String srcWord = word.child("word").getValue(String.class);
+                                String translation = word.child("translation").getValue(String.class);
+                                String transliteration = word.child("roman").getValue(String.class);
+                                String fileName = word.child("fname").getValue(String.class);
+                                VocabCard card = new VocabCard(id, position, srcLang, destLang, srcWord, translation, transliteration, rank, fileName);
+                                cardList.add(card);
+                            }
+
+                            if(cardList.size() > 0) {
+                                MySQLiteDatabase.getInstance(getApplicationContext()).insertWordList(cardList);
+                            }
+
+                            if(fName != null && uploadFileName != null && !fName.equals("")) {
+                                StorageReference desertRef = mStorageRef.child(uploadFileName);
+
+                                desertRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                                    @Override
+                                    public void onSuccess(Void aVoid) {
+                                        //Toast.makeText(context,"File Deleted " + child,Toast.LENGTH_LONG).show();
+                                        DeleteFirebase();
+                                        DeleteRecording(fName);
+                                    }
+                                }).addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception exception) {
+                                    }
+                                });
+                            }
+                            finish();
+//                            Intent i = new Intent(context, RecentWordsActivity.class);
+//                            progressDialog.dismiss();
+//                            context.startActivity(i);
+//                            finish();
                         }
                     }
                 }
@@ -362,11 +428,55 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    private void DeleteFirebase() {
+        String audioName = fName.replace(".", ",");
+
+        DatabaseReference audiosRef = mDatabaseRef.child("Audio").child(audioName);
+        audiosRef.setValue(null);
+
+//        String filename = fName;
+//        String filName = TrimFileName(filename);
+
+//        final DatabaseReference translationRef = FirebaseDatabase.getInstance().getReference().child("Translations").child(filName);
+//        translationRef.setValue(null);
+
+        //Toast.makeText(context,"Firebase Data Deleted",Toast.LENGTH_LONG).show();
+
+
+    }
+
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    private void DeleteRecording(String fName) {
+
+
+        File root = getExternalFilesDir(null);
+        assert root != null;
+        String path = root.getAbsolutePath() + "/VoiceRecorderSimplifiedCoding/Audios";
+        Log.d("Files", "Path: " + path);
+        File directory = new File(path);
+        File[] files = directory.listFiles();
+        assert files != null;
+        Log.d("Files", "Size: " + files.length);
+
+        for (File file : files) {
+
+            Log.d("Files", "FileName:" + file.getName());
+            String fileName = file.getName();
+//            String recordingUri = root.getAbsolutePath() + "/VoiceRecorderSimplifiedCoding/Audios/" + fileName;
+
+            if (fileName.equals(fName)) {
+                file.delete();
+                //          Toast.makeText(context,"File Deleted from File Storage",Toast.LENGTH_LONG).show();
+            }
+        }
+
+    }
+
     @Override
     public void onClick(View view) {
 
         if (view == imageViewRecord) {
-            prepareforRecording();
+            prepareForRecording();
             startRecording();
         } else if (view == imageViewStop) {
             prepareforStop();
@@ -407,7 +517,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         counter = 0;
     }
 
-    private void prepareforRecording() {
+    private void prepareForRecording() {
         TransitionManager.beginDelayedTransition(linearLayoutRecorder);
         imageViewRecord.setVisibility(View.GONE);
         imageViewStop.setVisibility(View.VISIBLE);
@@ -418,7 +528,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void startRecording() {
 //        File path = Environment.getDataDirectory();
-        startService(RecordingService.actionStartRecording);
+        startService();
         lastProgress = 0;
         seekBar.setProgress(0);
         stopPlaying();
@@ -429,13 +539,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     RecordingService recordingService;
     boolean mBound = false;
-    public static String NotificatoinChannelID = "MediaRecorderChannel";
-    public static String NotificationID = "RecorderNotification";
     ServiceConnection serviceConnection;
 
-    private void startService(String action) {
+    private void startService() {
         Intent service = new Intent(getApplicationContext(), RecordingService.class);
-        service.setAction(action);
+        service.setAction(RecordingService.actionStartRecording);
         startService(service);
 
         serviceConnection = new ServiceConnection() {
@@ -468,8 +576,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 unbindService(serviceConnection);
             }
         }
-
-        mRecorder = null;
         chronometer.stop();
         chronometer.setBase(SystemClock.elapsedRealtime());
     }
@@ -528,7 +634,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         int stoppedMilliseconds = 0;
 
         String chronoText = chronometer.getText().toString();
-        String array[] = chronoText.split(":");
+        String[] array = chronoText.split(":");
         if (array.length == 2) {
             stoppedMilliseconds = Integer.parseInt(array[0]) * 60 * 1000
                     + Integer.parseInt(array[1]) * 1000;
@@ -578,7 +684,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED
                 || ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
                 || ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-    requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO, Manifest.permission.WRITE_EXTERNAL_STORAGE},
+            requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO, Manifest.permission.WRITE_EXTERNAL_STORAGE},
                     RECORD_AUDIO_REQUEST_CODE);
 
         }
@@ -589,17 +695,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                            @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
         if (requestCode == RECORD_AUDIO_REQUEST_CODE) {
-            if (grantResults.length == 3 &&
+            if (!(grantResults.length == 3 &&
                     grantResults[0] == PackageManager.PERMISSION_GRANTED
                     && grantResults[1] == PackageManager.PERMISSION_GRANTED
-                    && grantResults[2] == PackageManager.PERMISSION_GRANTED) {
-
-            } else {
+                    && grantResults[2] == PackageManager.PERMISSION_GRANTED)) {
                 Toast.makeText(this, "You must give permissions to use this app. App is exiting.", Toast.LENGTH_SHORT).show();
                 finishAffinity();
             }
         }
-
     }
 
     @Override
