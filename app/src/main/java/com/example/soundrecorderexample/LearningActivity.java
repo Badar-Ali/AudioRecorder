@@ -17,6 +17,7 @@ import android.view.animation.BounceInterpolator;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Interpolator;
 import android.view.animation.LinearInterpolator;
+import android.view.animation.OvershootInterpolator;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -41,7 +42,7 @@ import java.util.List;
 
 public class LearningActivity extends AppCompatActivity {
 
-    int limit = 2;
+    int limit = 5;
 
     private Button previous;
     private Button next;
@@ -52,8 +53,9 @@ public class LearningActivity extends AppCompatActivity {
     boolean flipped = false;
     View allDoneDialog;
 
-    private int nextCardAnimationDuration = 500;
-    private Interpolator nextCardAnimationInterpolator = new BounceInterpolator();
+    private int nextCardAnimationDuration = 100;
+    private int flipCardAnimationDuration = 100;
+    private Interpolator nextCardAnimationInterpolator = new OvershootInterpolator();
     List<VocabCard> vocabCardList;
     int current = 0;
     int explored = 0;
@@ -96,17 +98,16 @@ public class LearningActivity extends AppCompatActivity {
 
         long time = -1;
         State state;
-        if(savedInstanceState != null) {
+        if (savedInstanceState != null) {
             allDone = savedInstanceState.getBoolean("allDone");
             current = savedInstanceState.getInt("current");
             explored = savedInstanceState.getInt("explored");
             vocabCardList = savedInstanceState.getParcelableArrayList("vocabCardList");
             flipped = savedInstanceState.getBoolean("flipped");
             time = savedInstanceState.getLong("time");
-        }
-        else {
+        } else {
             state = MySQLiteDatabase.getInstance(getApplicationContext()).getState();
-            if(state!=null && !state.cards.isEmpty()) {
+            if (state != null && !state.cards.isEmpty()) {
                 vocabCardList = state.cards;
                 explored = state.explored;
                 flipped = state.flipped;
@@ -128,7 +129,7 @@ public class LearningActivity extends AppCompatActivity {
 
         long ctime = new Date().getTime();
         long showtime = MySQLiteDatabase.getInstance(getApplicationContext()).getNewWordsShowTime();
-        if(time == -1 || (allDone  && (((ctime - time) <= 600000) || ctime >= showtime))) {
+        if (time == -1 || (allDone && (((ctime - time) <= 600000) || ctime >= showtime))) {
             vocabCardList = MySQLiteDatabase.getInstance(context).getNewCards(limit);
             current = 0;
             flipped = false;
@@ -158,12 +159,12 @@ public class LearningActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View v) {
                     String id = vocabCardList.get(current).getId();
-                    MySQLiteDatabase.getInstance(getApplicationContext()).addTimeStamp(id, new Date().getTime() + 60*1000);
+                    MySQLiteDatabase.getInstance(getApplicationContext()).addTimeStamp(id, new Date().getTime() + 60 * 1000);
                     gotoNext(vocabCardList);
                 }
             });
 
-            if(vocabCardList.size() == 1) {
+            if (vocabCardList.size() == 1) {
                 next.setVisibility(View.INVISIBLE);
             }
 
@@ -189,13 +190,13 @@ public class LearningActivity extends AppCompatActivity {
 //            lang.setText(vocabCardList.get(current).srcLang);
 //            text.setText(vocabCardList.get(current).word);
 
-            if(explored > current) {
-                if(current < vocabCardList.size()-1) {
+            if (explored > current) {
+                if (current < vocabCardList.size() - 1) {
                     next.setVisibility(View.VISIBLE);
                 }
             }
 
-            if(current > 0) {
+            if (current > 0) {
                 previous.setVisibility(View.VISIBLE);
             }
 
@@ -208,8 +209,7 @@ public class LearningActivity extends AppCompatActivity {
                 text.setText(vocabCardList.get(current).word);
                 transliterationView.setText("");
                 cardView.setBackgroundColor(0xffffffff);
-            }
-            else {
+            } else {
                 cardView.setBackgroundColor(0xff000000);
                 lang.setTextColor(0xffffffff);
                 deleteWord.setTextColor(0xffffffff);
@@ -243,25 +243,27 @@ public class LearningActivity extends AppCompatActivity {
                                     reference.child("Translations").child(vocabCardList.get(current).fileName).child(vocabCardList.get(current).getId()).setValue(null).addOnCompleteListener(new OnCompleteListener<Void>() {
                                         @Override
                                         public void onComplete(@NonNull Task<Void> task) {
-                                            if(task.isSuccessful()) {
+                                            if (task.isSuccessful()) {
                                                 MySQLiteDatabase.getInstance(context).deleteWord(vocabCardList.get(current).getId());
                                                 vocabCardList.remove(current);
                                                 gotoPrevious(vocabCardList);
                                             }
                                         }
                                     });
-                                }})
+                                }
+                            })
                             .setNegativeButton(android.R.string.no, null).show();
                 }
             });
+
 
             cardView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     final ObjectAnimator oa1 = ObjectAnimator.ofFloat(v, "scaleY", 1f, 0f);
                     final ObjectAnimator oa2 = ObjectAnimator.ofFloat(v, "scaleY", 0f, 1f);
-                    oa1.setDuration(300);
-                    oa2.setDuration(300);
+                    oa1.setDuration(flipCardAnimationDuration);
+                    oa2.setDuration(flipCardAnimationDuration);
                     oa1.setInterpolator(new DecelerateInterpolator());
                     oa2.setInterpolator(new AccelerateDecelerateInterpolator());
                     oa1.addListener(new AnimatorListenerAdapter() {
@@ -305,8 +307,7 @@ public class LearningActivity extends AppCompatActivity {
 
                 }
             });
-        }
-        else {
+        } else {
             noWords.setVisibility(View.VISIBLE);
             cardView.setVisibility(View.GONE);
             next.setVisibility(View.GONE);
@@ -324,7 +325,7 @@ public class LearningActivity extends AppCompatActivity {
     }
 
     private void gotoPrevious(final List<VocabCard> data) {
-        if(current == 0) {
+        if (current == 0) {
             return;
         }
         ObjectAnimator animatorX = ObjectAnimator.ofFloat(cardView, "scaleX", 1f, 0.001f);
@@ -341,7 +342,7 @@ public class LearningActivity extends AppCompatActivity {
             @Override
             public void onAnimationEnd(Animator animation) {
                 --current;
-                if(current == 0) {
+                if (current == 0) {
                     previous.setVisibility(View.INVISIBLE);
                 }
 //                next.setVisibility(View.VISIBLE);
@@ -381,10 +382,10 @@ public class LearningActivity extends AppCompatActivity {
 
     private void gotoNext(final List<VocabCard> data) {
 
-        if(current == data.size()-1) {
+        if (current == data.size() - 1) {
             allDone = true;
-            ObjectAnimator animator = ObjectAnimator.ofFloat(allDoneDialog, "alpha", 0,1);
-            animator.setDuration(200);
+            ObjectAnimator animator = ObjectAnimator.ofFloat(allDoneDialog, "alpha", 0, 1);
+            animator.setDuration(nextCardAnimationDuration);
             animator.setInterpolator(new LinearInterpolator());
             animator.addListener(new Animator.AnimatorListener() {
                 @Override
@@ -436,7 +437,7 @@ public class LearningActivity extends AppCompatActivity {
             public void onAnimationEnd(Animator animation) {
                 ++current;
 
-                if(current == data.size()-1){
+                if (current == data.size() - 1) {
                     next.setVisibility(View.INVISIBLE);
                     next.setEnabled(false);
                 }

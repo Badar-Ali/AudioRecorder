@@ -215,8 +215,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Button trasnlateBtn = findViewById(R.id.translateBtn);
 
 
-        String[] srclanguages = new String[]{"Select Source Language", "English", "Chinese", "German", "Russian", "Italian", "Spanish","Japanese","Swedish"};
-        String[] destlanguages = new String[]{"Select Destination Language", "English", "Chinese", "German", "Russian", "Italian", "Spanish","Japanese","Swedish"};
+        String[] srclanguages = new String[]{"Select Source Language", "English", "Chinese", "German", "Russian", "Italian", "Spanish","Japanese","French"};
+        String[] destlanguages = new String[]{"Select Destination Language", "English", "Chinese", "German", "Russian", "Italian", "Spanish","Japanese","French"};
 
         ArrayAdapter<String> srcAdapter = new ArrayAdapter<>(this, R.layout.support_simple_spinner_dropdown_item, srclanguages);
         final ArrayAdapter<String> destAdapter = new ArrayAdapter<>(this, R.layout.support_simple_spinner_dropdown_item, destlanguages);
