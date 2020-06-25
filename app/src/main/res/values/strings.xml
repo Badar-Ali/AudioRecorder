@@ -60,5 +60,6 @@
     <string name="translatedListIntentSourcLanguage">srcLanguage</string>
     <string name="translatedListIntentDestinationLanguage">destLanguage</string>
     <string name="recording_new_words">Speech Translation</string>
+    <string name="learn">Learn</string>
 
 </resources>

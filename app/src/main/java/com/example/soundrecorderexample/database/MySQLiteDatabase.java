@@ -374,7 +374,8 @@ public class MySQLiteDatabase extends SQLiteOpenHelper {
         return count > 0;
     }
 
-    private List<VocabCard> parseTable(int limit, Cursor cursor) {
+    @NonNull
+    private List<VocabCard> parseTable(int limit, @NonNull Cursor cursor) {
         int i = 0;
         List<VocabCard> vocabCards = new ArrayList<>();
         while(cursor.moveToNext() && i < limit) {
@@ -416,7 +417,7 @@ public class MySQLiteDatabase extends SQLiteOpenHelper {
                         " ORDER BY " + RANK_COLUMN + " DESC, " + TIME_WHEN_TO_SHOW_COLUMN + " DESC;"
                 , new String[]{String.valueOf((new Date()).getTime())});
 
-        List<VocabCard> cards;
+        List<VocabCard> cards = null;
         if(cursor.getCount() > 0) {
             cards = parseTable(limit, cursor);
 //            while (cursor.moveToNext() && index < limit) {
@@ -425,10 +426,16 @@ public class MySQLiteDatabase extends SQLiteOpenHelper {
 //                index++;
 //            }
             cursor.close();
+            if(cursor.getCount() < limit) {
+                int remainig = limit - cursor.getCount();
+                cursor = database.rawQuery("SELECT * FROM " + VOCABULARY_TABLE + " ORDER BY " + TIME_WHEN_TO_SHOW_COLUMN + " ASC, " + RANK_COLUMN + " DESC;", null);
+                List<VocabCard> newCards = parseTable(remainig, cursor);
+                newCards.addAll(cards);
+            }
         }
         else {
             cursor.close();
-            cursor = database.rawQuery("SELECT * FROM " + VOCABULARY_TABLE + " ORDER BY " + RANK_COLUMN + " DESC, " + TIME_WHEN_TO_SHOW_COLUMN + " ASC;", null);
+            cursor = database.rawQuery("SELECT * FROM " + VOCABULARY_TABLE + " ORDER BY " + TIME_WHEN_TO_SHOW_COLUMN + " ASC, " + RANK_COLUMN + " DESC;", null);
             cards = parseTable(limit, cursor);
 //            while(cursor.moveToNext() && index < limit) {
 //                VocabCard vocabCard = new VocabCard(cursor.getString(0), cursor.getString(3), cursor.getString(4), cursor.getString(1), cursor.getString(2), cursor.getString(5), cursor.getLong(7), cursor.getString(8));
@@ -488,6 +495,11 @@ public class MySQLiteDatabase extends SQLiteOpenHelper {
         }
         cursor.close();
         return vocabCards;
+    }
+
+    public void clearState() {
+        SQLiteDatabase database = getWritableDatabase();
+        database.delete(STATE_TABLE, "1", null);
     }
 
     public void saveState(List<VocabCard> cards, int current, int explored, boolean flipped, boolean allDone) {

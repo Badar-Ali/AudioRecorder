@@ -7,25 +7,28 @@ import android.animation.ObjectAnimator;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcelable;
 import android.os.PersistableBundle;
+import android.view.Gravity;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
-import android.view.animation.BounceInterpolator;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Interpolator;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.OvershootInterpolator;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatTextView;
-import androidx.appcompat.widget.Toolbar;
 import androidx.cardview.widget.CardView;
 
 import com.example.soundrecorderexample.database.MySQLiteDatabase;
@@ -64,6 +67,17 @@ public class LearningActivity extends AppCompatActivity {
     boolean allDone = false;
 
     @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                onBackPressed();
+                return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
     protected void onDestroy() {
         MySQLiteDatabase.getInstance(getApplicationContext()).saveState(vocabCardList, current, explored, flipped, allDone);
         super.onDestroy();
@@ -85,16 +99,16 @@ public class LearningActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_learning);
         context = this;
-        Toolbar toolbar = findViewById(R.id.toolbar);
         allDoneDialog = findViewById(R.id.allDoneDialog);
-        toolbar.setTitle("Speech Translation");
-        setSupportActionBar(toolbar);
-        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onBackPressed();
-            }
-        });
+        setTitle("Learning");
+//        toolbar.setTitle("Speech Translation");
+//        setSupportActionBar(toolbar);
+//        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                onBackPressed();
+//            }
+//        });
 
         long time = -1;
         State state;
@@ -401,6 +415,7 @@ public class LearningActivity extends AppCompatActivity {
                     easy.setVisibility(View.GONE);
                     medium.setVisibility(View.GONE);
                     hard.setVisibility(View.GONE);
+                    MySQLiteDatabase.getInstance(getApplicationContext()).clearState();
                     new Handler().postDelayed(new Runnable() {
                         @Override
                         public void run() {
@@ -477,4 +492,20 @@ public class LearningActivity extends AppCompatActivity {
 
     }
 
+    public void setTitle(String title){
+        TextView textView = new TextView(this);
+        textView.setText(title);
+        textView.setTextSize(20);
+        textView.setTypeface(null, Typeface.BOLD);
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        layoutParams.gravity = Gravity.CENTER;
+        textView.setLayoutParams(layoutParams);
+//        textView.setBackgroundColor(getResources().getColor(R.color.colorPrimaryDark));
+        textView.setGravity(Gravity.CENTER);
+        textView.setTextColor(getResources().getColor(R.color.colorWhite));
+        getSupportActionBar().setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
+        getSupportActionBar().setCustomView(textView);
+        getSupportActionBar().setHomeButtonEnabled(true);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+    }
 }

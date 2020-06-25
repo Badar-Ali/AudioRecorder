@@ -19,11 +19,11 @@
         tools:ignore="GoogleAppIndexingWarning">
 
         <activity android:name=".LearningActivity"
-            android:screenOrientation="portrait">
+            android:screenOrientation="portrait" android:theme="@style/AppTheme">
 
         </activity>
 
-        <activity android:name=".HomeScreenActivity" android:screenOrientation="portrait">
+        <activity android:name=".HomeScreenActivity" android:screenOrientation="portrait" android:theme="@style/AppTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -38,12 +38,14 @@
 
         <activity
             android:name=".MainActivity"
+            android:theme="@style/AppThemeNoActionBar"
             android:screenOrientation="portrait">
         </activity>
         <activity android:name=".RecentWordsActivity"
+            android:theme="@style/AppThemeNoActionBar"
             android:screenOrientation="portrait" />
         <activity android:name=".CompleteWordListActivity"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+            android:theme="@style/AppThemeNoActionBar"
             android:screenOrientation="portrait"/>
     </application>
 
